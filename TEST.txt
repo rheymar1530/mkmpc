@@ -1,0 +1,23 @@
+SELECT crv.id_cash_receipt_voucher FROM cash_Receipt_voucher as crv
+LEFT JOIN cash_receipt_voucher_details as crvd on crvd.id_cash_receipt_voucher = crv.id_cash_receipt_voucher
+WHERE crv.type = 2 AND crv.date >= '2025-01-01' AND crv.status <> 10 AND crvd.id_chart_account = 35
+GROUP BY crv.id_cash_receipt_voucher;
+
+SELECT l.id_loan,l.id_cash_disbursement,amt,SUM(credit), amt-SUM(credit) FROM (
+SELECT loan.id_loan,SUM(p_interest) as amt ,loan.id_cash_disbursement,lo.id_loan_to_pay
+FROM loan
+LEFT JOIN loan_offset as lo on lo.id_loan = loan.id_loan
+WHERE loan.date_released >= '2025-01-01' AND loan.date_released >= '2025-01-01' AND loan.date_released >= 0
+AND lo.id_loan is not null
+GROUP BY loan.id_loan) as l
+LEFT JOIN cash_disbursement_details as cdd on cdd.id_cash_disbursement = l.id_cash_disbursement AND l.id_loan_to_pay = cdd.reference
+WHERE cdd.id_chart_account = 35
+GROUP BY id_cash_disbursement;
+
+sELECT * FROM chart_Account;
+
+
+sELECT * FROM cash_disbursement_details
+WHERE id_cash_disbursement = 176 AND id_chart_account = 5 AND reference = 1043;
+SELECT * FROM loan_offset
+WHERE id_loan=2057;
