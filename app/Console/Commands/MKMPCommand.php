@@ -35,22 +35,25 @@ class MKMPCommand extends Command
         $password = config('database.connections.mysql.password');
         $host     = config('database.connections.mysql.host');
 
-        // Step 1: Ensure schema exists
-        $createCommand = sprintf(
-            'mysql -h %s -u %s %s -e "CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"',
-            escapeshellarg($host),
-            escapeshellarg($username),
-            $password ? '-p' . escapeshellarg($password) : '',
-            escapeshellarg($database)
-        );
+        $sqlContent = file_get_contents($file);
 
-        $this->info("Ensuring database `$database` exists...");
-        system($createCommand, $createReturn);
 
-        if ($createReturn !== 0) {
-            $this->error("❌ Failed to create database `$database`.");
-            return Command::FAILURE;
+        try{
+                    DB::unprepared($sqlContent);
+        }catch(\Illuminate\Database\QueryException $ex){
+            DB::rollback();
+            $data['RESPONSE_CODE'] = "ERROR";
+            $data['message'] = "Something went wrong";
+            $data['error'] = $ex->getMessage();
+
+            dd($data);
+            return response($data);
         }
+
+
+
+
+        dd("SUCCESS");
 
         // Step 2: Import dump
         $importCommand = sprintf(
