@@ -34,9 +34,11 @@ class CBUWithdrawalController extends Controller
             return redirect('/redirect/error')->with('message', "privilege_access_invalid");
         }
         $data['withdrawals'] = DB::table('cbu_withdrawal as cbu')
-                               ->select(DB::raw("DATE_FORMAT(cbu.date_released,'%m/%d/%Y') as date_released,cbu.id_cbu_withdrawal,FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,if(cbu.reason < 4,cr.description,cbu.other_reason) as reason,cbu.amount,if(cbu.status=0,'Draft',if(cbu.status=1,'Approved, For Releasing',if(cbu.status=2,'Released',if(cbu.status=5,'Disapproved','Cancelled')))) as status,cbu.id_cash_disbursement,cbu.status as status_code,DATE_FORMAT(cbu.date_created,'%m/%d/%Y') as date_created"))
+                               ->select(DB::raw("DATE_FORMAT(cbu.date_released,'%m/%d/%Y') as date_released,cbu.id_cbu_withdrawal,FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,if(cbu.reason < 4,cr.description,cbu.other_reason) as reason,cbu.amount,if(cbu.status=0,'Draft',if(cbu.status=1,'Approved, For Releasing',if(cbu.status=2,'Released',if(cbu.status=5,'Disapproved','Cancelled')))) as status,cbu.id_cash_disbursement,cbu.status as status_code,DATE_FORMAT(cbu.date_created,'%m/%d/%Y') as date_created,
+                                if(cbu.id_bank = 0,'Cash',tb.bank_name) as mode"))
                                ->leftJoin('member as m','m.id_member','cbu.id_member')
                                ->leftJoin('cbu_withdrawal_reason as cr','cr.id_cbu_withdrawal_reason','cbu.reason')
+                               ->leftJoin('tbl_bank as tb','tb.id_bank','cbu.id_bank')
                                ->where(function($query){
                                     if(!MySession::isAdmin()){
                                         $query->where('cbu.id_member',MySession::myId());
@@ -200,7 +202,8 @@ class CBUWithdrawalController extends Controller
         $data['current_date'] = MySession::current_date();
         $data['head_title'] = "CBU Withdrawal #$id_cbu_withdrawal";
         $data['details'] = DB::table('cbu_withdrawal as cbu')
-                         ->select(DB::raw("*,if(cbu.status=0,'Draft',if(cbu.status=1,'Approved, For Releasing',if(cbu.status=2,'Released',if(cbu.status=5,'Disapproved','Cancelled')))) as status_desc"))
+                         ->select(DB::raw("cbu.*,if(cbu.status=0,'Draft',if(cbu.status=1,'Approved, For Releasing',if(cbu.status=2,'Released',if(cbu.status=5,'Disapproved','Cancelled')))) as status_desc,if(cbu.id_bank=0,'Cash',tb.bank_name) as mode"))
+                         ->leftJoin('tbl_bank as tb','tb.id_bank','cbu.id_bank')
                          ->where('id_cbu_withdrawal',$id_cbu_withdrawal)->first();
 
 
@@ -218,7 +221,7 @@ class CBUWithdrawalController extends Controller
 
         $data['reasons'] = DB::table('cbu_withdrawal_reason')->get();
         $data['current_cbu'] = $this->parseMemberCBU($data['details']->id_member,0);
-
+        $data['banks'] = DB::table('tbl_bank')->get();
 
         return view('cbu_withdraw.form',$data);
 
@@ -262,9 +265,10 @@ class CBUWithdrawalController extends Controller
                         return response($data);
                     }
 
+
                     DB::table('cbu_withdrawal')
                     ->where('id_cbu_withdrawal',$request->id_cbu_withdrawal)
-                    ->update(['status'=>$status,'date_released'=>$request->date]);
+                    ->update(['status'=>$status,'date_released'=>$request->date,'id_bank'=>$request->id_bank]);
 
                     CDVModel::CBUWithdrawalCDV($request->id_cbu_withdrawal);
                     $data['show_print'] = true;

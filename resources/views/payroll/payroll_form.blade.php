@@ -170,7 +170,7 @@
 								<label class="col-md-1 control-label col-form-label col-md-cus" style="text-align: left">Salary Mode&nbsp;</label>
 								<div class="col-md-3">
 									<select class="form-control in_payroll p-0" id="sel_mode" key="id_bank">
-										<?php $selected_bank = $payroll->id_bank ?? 0; ?>
+										<?php $selected_bank = $payroll->id_bank ?? 1; ?>
 										<option value="0">Cash</option>
 										@foreach($banks as $b)
 										<option value="{{$b->id_bank}}" <?php echo ($selected_bank==$b->id_bank)?"selected":""  ?> >Bank - {{$b->bank_name}}</option>

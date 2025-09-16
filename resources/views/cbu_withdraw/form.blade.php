@@ -43,6 +43,17 @@ $sel_reason = $details->reason ?? 1;
 				</div>
 				@endif
 
+				@if(($opcode == 1 && $details->status == 2))
+				<div class="row mt-2 d-flex align-items-end">
+					<div class="col-md-12 col-12">
+						<label class="mb-0">Mode</label>
+						<input type="text" class="form-control" value="{{$details->mode}}" disabled>
+
+					</div>
+				
+				</div>
+				@endif
+
 				<div class="row mt-2 d-flex align-items-end">
 					<div class="col-md-4 col-12">
 						<label class="mb-0">Reason</label>
@@ -127,6 +138,7 @@ $sel_reason = $details->reason ?? 1;
 		var val = $('#sel_reason').val();
 		if(val == 4){
 			$('#others_holder').html(others_reason_html);
+			$('#txt_amount').prop('disabled',false);
 		}else{
 			$('#others_holder').html('');
 			if(val == 1){

@@ -46,9 +46,9 @@ if(MySession::isAdmin()){
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="col-md-12">
-                        <div class="form-row" style="margin-top:10px">
+                        <div class="form-row">
                             <div class="form-group col-md-12">
                                 <label for="sel_status">Status</label>
                                 <select class="form-control p-0" id="sel_status">
@@ -62,13 +62,25 @@ if(MySession::isAdmin()){
                         @if($details->status == 1)
                         <div class="form-row" id="div_date_holder">
                             <div class="form-group col-md-12">
-                                <label for="sel_status">Date</label>
+                                <label class="mb-0" for="sel_status">Date</label>
                                 <input type="date" class="form-control" id="txt_date_released" value="{{$current_date}}">
+                            </div>
+                            <div class="form-group col-md-12">
+                                <label class="mb-0">Mode</label>
+                                <select class="form-control p-0" id="sel_mode" key="id_bank">
+                                    <?php $selected_bank = 1 ?>
+                                    <option value="0">Cash</option>
+                                    @foreach($banks as $b)
+                                    <option value="{{$b->id_bank}}" <?php echo ($selected_bank==$b->id_bank)?"selected":""  ?> >Bank - {{$b->bank_name}}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div> 
                         @endif
 
                         <div id="div_reason_cancel"></div>
+
+
 
                     </div>
                 </div>
@@ -93,11 +105,13 @@ if(MySession::isAdmin()){
     </div>
     </div> `;
 
+
     let date_div = '';
 
     <?php
     if($details->status == 1){
         echo " date_div = $('#div_date_holder').detach(); ";
+
     }
 
     ?>
@@ -114,6 +128,7 @@ if(MySession::isAdmin()){
     }else if(val == 2){
         $('#div_reason_cancel').html(date_div);
     }else{
+       
         $('#div_reason_cancel').html('');
     } 
 }
@@ -146,7 +161,8 @@ function post_status(){
         data       :       {'id_cbu_withdrawal' : '{{$details->id_cbu_withdrawal ?? 0 }}',
                             'status' : $('#sel_status').val(),
                             'reason' : $('#txt_cancel_reason').val(),
-                            'date' : $('#txt_date_released').val()},
+                            'date' : $('#txt_date_released').val(),
+                            'id_bank' : $('#sel_mode').val()},
         beforeSend :       function(){
                             show_loader();
         },

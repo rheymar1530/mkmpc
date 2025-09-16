@@ -52,6 +52,7 @@
 					<tr class="table_header_dblue">
 						<th>ID</th>
 						<th>Member</th>
+						<th>Mode</th>
 						<th>Reason</th>
 						<th>Amount</th>
 						<th>CDV #</th>
@@ -65,6 +66,7 @@
 					<tr class="cbu_request_row" data-code="{{$list->id_cbu_withdrawal}}" cdv-id="{{$list->id_cash_disbursement}}">
 						<td>{{$list->id_cbu_withdrawal}}</td>
 						<td>{{$list->member}}</td>
+						<td>{{$list->mode}}</td>
 						<td>{{$list->reason}}</td>
 
 						<td class="class_amount">{{number_format($list->amount,2)}}</td>

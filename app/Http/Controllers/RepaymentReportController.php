@@ -33,7 +33,7 @@ class RepaymentReportController extends Controller
 
 
     public function parseData(Request $request){
-        $current_month = date("n", strtotime(MySession::current_date()));
+         $current_month = date("n", strtotime(MySession::current_date()));
         $current_year = date("Y", strtotime(MySession::current_date()));
 
         $data = array();
@@ -70,8 +70,8 @@ class RepaymentReportController extends Controller
             }
         }
 
-        
-
+        // dd($param);
+        // unset($param['month_end2']);
         $repayment_data = DB::select("
         WITH current_payment as (
           -- SELECT rl.id_loan,SUM(rl.paid_principal+rl.paid_interest+rl.paid_fees) as payment
@@ -89,7 +89,9 @@ class RepaymentReportController extends Controller
             GROUP BY rl.id_loan
             UNION ALL
             SELECT id_loan,0 as payment FROM loan
-            WHERE loan_status = 1  AND loan.date_released <= :month_end2) as l
+            WHERE loan_status = 1 
+             -- AND loan.date_released <= :month_end2
+            ) as l
             GROUP BY id_loan
         ),
         previous_payment as (
@@ -116,7 +118,7 @@ class RepaymentReportController extends Controller
             GROUP BY lt.id_loan
         )
         SELECT ls.name as service_name,loan.terms,FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member_name,
-        DATE_FORMAT(loan.date_released,'%m/%d/%Y') as date_released,DATE_FORMAT(loan.maturity_date,'%m/%d/%Y') as maturity_date,loan.loan_token,ld.id_loan,
+        DATE_FORMAT(MIN(lt.due_date),'%m/%d/%Y') as date_released,DATE_FORMAT(loan.maturity_date,'%m/%d/%Y') as maturity_date,loan.loan_token,ld.id_loan,
         prev_due,ifnull(pp.prev_due_payment,0) as prev_payment,prev_due-ifnull(pp.prev_due_payment,0) as prev_due_balance,
         current_due,ifnull(pp.current_due_payment,0) as current_offset,current_due-ifnull(pp.current_due_payment,0) as cur_due_balance,cp.payment,
         if(loan.loan_status = 2,'Closed','Active') as loan_status,
@@ -129,16 +131,21 @@ class RepaymentReportController extends Controller
         LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service
         LEFT JOIN member as m on m.id_member = loan.id_member
         LEFT JOIN baranggay_lgu as bl on bl.id_baranggay_lgu = loan.id_baranggay_lgu
-        WHERE loan.id_loan_payment_type = 1
+        LEFT JOIN loan_table as lt on lt.id_loan = ld.id_loan
+        WHERE loan.id_loan_payment_type = 1 OR (loan.id_loan_payment_type = 2 AND loan.maturity_date <= :month_end2)
+        GROUP BY ld.id_loan
         ORDER BY ordering_,dataGroupings,member_name;",$param);
 
-        
+            
         $g = new GroupArrayController();
 
         $data['repayment_data'] = $g->array_group_by($repayment_data,['dataGroupings']);
         $data['asOf'] = date("F Y", strtotime($data['dt']));
 
+        // dd($data);
+
         return $data;
+
 
     }
 

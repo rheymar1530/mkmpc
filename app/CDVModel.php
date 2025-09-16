@@ -421,7 +421,8 @@ class CDVModel extends Model
         UNION ALL
         SELECT $id_cash_disbursement as id_cash_disbursement,ca.id_chart_account,ca.account_code,ca.description,0 as debit,cbu.amount  as credit,'' as remarks,cbu.id_cbu_withdrawal
         FROM cbu_withdrawal as cbu
-        LEFT JOIN chart_account as ca on ca.id_chart_account = 1
+        LEFT JOIN tbl_bank as tb on tb.id_bank = cbu.id_bank
+        LEFT JOIN chart_account as ca on ca.id_chart_account = if(cbu.id_bank = 0,1,tb.id_chart_account)
         WHERE id_cbu_withdrawal = ?;",[$id_cbu_withdrawal,$id_cbu_withdrawal]);
     }
 
