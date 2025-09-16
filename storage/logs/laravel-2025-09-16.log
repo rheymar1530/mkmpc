@@ -1,0 +1,128 @@
+[2025-09-16 16:32:09] local.ERROR: Class "Fideloper\Proxy\TrustProxies" not found {"exception":"[object] (Error(code: 0): Class \"Fideloper\\Proxy\\TrustProxies\" not found at C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\TrustProxies.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(576): include()
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(427): {closure:Composer\\Autoload\\ClassLoader::initializeIncludeClosure():575}('C:\\\\wamp64\\\\www\\\\m...')
+#2 [internal function]: Composer\\Autoload\\ClassLoader->loadClass('App\\\\Http\\\\Middle...')
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(912): ReflectionClass->__construct('App\\\\Http\\\\Middle...')
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(795): Illuminate\\Container\\Container->build('App\\\\Http\\\\Middle...')
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(986): Illuminate\\Container\\Container->resolve('App\\\\Http\\\\Middle...', Array, true)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(731): Illuminate\\Foundation\\Application->resolve('App\\\\Http\\\\Middle...', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(971): Illuminate\\Container\\Container->make('App\\\\Http\\\\Middle...', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(172): Illuminate\\Foundation\\Application->make('App\\\\Http\\\\Middle...')
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#11 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#12 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#13 {main}
+"} 
+[2025-09-16 16:32:11] local.ERROR: Class "Fideloper\Proxy\TrustProxies" not found {"exception":"[object] (Error(code: 0): Class \"Fideloper\\Proxy\\TrustProxies\" not found at C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\TrustProxies.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(576): include()
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(427): {closure:Composer\\Autoload\\ClassLoader::initializeIncludeClosure():575}('C:\\\\wamp64\\\\www\\\\m...')
+#2 [internal function]: Composer\\Autoload\\ClassLoader->loadClass('App\\\\Http\\\\Middle...')
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(912): ReflectionClass->__construct('App\\\\Http\\\\Middle...')
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(795): Illuminate\\Container\\Container->build('App\\\\Http\\\\Middle...')
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(986): Illuminate\\Container\\Container->resolve('App\\\\Http\\\\Middle...', Array, true)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(731): Illuminate\\Foundation\\Application->resolve('App\\\\Http\\\\Middle...', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(971): Illuminate\\Container\\Container->make('App\\\\Http\\\\Middle...', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(255): Illuminate\\Foundation\\Application->make('App\\\\Http\\\\Middle...')
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(213): Illuminate\\Foundation\\Http\\Kernel->terminateMiddleware(Object(Illuminate\\Http\\Request), Object(Illuminate\\Http\\Response))
+#10 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(60): Illuminate\\Foundation\\Http\\Kernel->terminate(Object(Illuminate\\Http\\Request), Object(Illuminate\\Http\\Response))
+#11 {main}
+"} 
+[2025-09-16 16:32:32] local.ERROR: Cannot redeclare class App\MySession (previously declared in C:\wamp64\www\maasin_live_act\app\MySession.php:8) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot redeclare class App\\MySession (previously declared in C:\\wamp64\\www\\maasin_live_act\\app\\MySession.php:8) at C:\\wamp64\\www\\maasin_live_act\\app\\Models\\MySession.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(244): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Cannot redecla...', code: '0', error: '['type' => 64, ...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(231): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 64, ...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(255): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->{closure:C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:254-256}()
+#4 {main}
+"} 
+[2025-09-16 16:32:33] local.ERROR: Cannot redeclare class App\MySession (previously declared in C:\wamp64\www\maasin_live_act\app\MySession.php:8) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot redeclare class App\\MySession (previously declared in C:\\wamp64\\www\\maasin_live_act\\app\\MySession.php:8) at C:\\wamp64\\www\\maasin_live_act\\app\\Models\\MySession.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(244): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Cannot redecla...', code: '0', error: '['type' => 64, ...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(231): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 64, ...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(255): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->{closure:C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:254-256}()
+#4 {main}
+"} 
+[2025-09-16 16:33:17] local.ERROR: Class "Fideloper\Proxy\TrustProxies" not found {"exception":"[object] (Error(code: 0): Class \"Fideloper\\Proxy\\TrustProxies\" not found at C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\TrustProxies.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(576): include()
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(427): {closure:Composer\\Autoload\\ClassLoader::initializeIncludeClosure():575}('C:\\\\wamp64\\\\www\\\\m...')
+#2 [internal function]: Composer\\Autoload\\ClassLoader->loadClass('App\\\\Http\\\\Middle...')
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(912): ReflectionClass->__construct('App\\\\Http\\\\Middle...')
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(795): Illuminate\\Container\\Container->build('App\\\\Http\\\\Middle...')
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(986): Illuminate\\Container\\Container->resolve('App\\\\Http\\\\Middle...', Array, true)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(731): Illuminate\\Foundation\\Application->resolve('App\\\\Http\\\\Middle...', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(971): Illuminate\\Container\\Container->make('App\\\\Http\\\\Middle...', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(172): Illuminate\\Foundation\\Application->make('App\\\\Http\\\\Middle...')
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#11 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#12 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#13 {main}
+"} 
+[2025-09-16 16:33:18] local.ERROR: Class "Fideloper\Proxy\TrustProxies" not found {"exception":"[object] (Error(code: 0): Class \"Fideloper\\Proxy\\TrustProxies\" not found at C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\TrustProxies.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(576): include()
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(427): {closure:Composer\\Autoload\\ClassLoader::initializeIncludeClosure():575}('C:\\\\wamp64\\\\www\\\\m...')
+#2 [internal function]: Composer\\Autoload\\ClassLoader->loadClass('App\\\\Http\\\\Middle...')
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(912): ReflectionClass->__construct('App\\\\Http\\\\Middle...')
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(795): Illuminate\\Container\\Container->build('App\\\\Http\\\\Middle...')
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(986): Illuminate\\Container\\Container->resolve('App\\\\Http\\\\Middle...', Array, true)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(731): Illuminate\\Foundation\\Application->resolve('App\\\\Http\\\\Middle...', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(971): Illuminate\\Container\\Container->make('App\\\\Http\\\\Middle...', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(255): Illuminate\\Foundation\\Application->make('App\\\\Http\\\\Middle...')
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(213): Illuminate\\Foundation\\Http\\Kernel->terminateMiddleware(Object(Illuminate\\Http\\Request), Object(Illuminate\\Http\\Response))
+#10 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(60): Illuminate\\Foundation\\Http\\Kernel->terminate(Object(Illuminate\\Http\\Request), Object(Illuminate\\Http\\Response))
+#11 {main}
+"} 
+[2025-09-16 16:33:32] local.ERROR: Cannot redeclare class App\MySession (previously declared in C:\wamp64\www\maasin_live_act\app\MySession.php:8) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot redeclare class App\\MySession (previously declared in C:\\wamp64\\www\\maasin_live_act\\app\\MySession.php:8) at C:\\wamp64\\www\\maasin_live_act\\app\\Models\\MySession.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(244): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Cannot redecla...', code: '0', error: '['type' => 64, ...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(231): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 64, ...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(255): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->{closure:C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:254-256}()
+#4 {main}
+"} 
+[2025-09-16 16:33:40] local.ERROR: Class "App\Http\Middleware\Middleware" not found {"exception":"[object] (Error(code: 0): Class \"App\\Http\\Middleware\\Middleware\" not found at C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\TrustProxies.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(576): include()
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(427): {closure:Composer\\Autoload\\ClassLoader::initializeIncludeClosure():575}('C:\\\\wamp64\\\\www\\\\m...')
+#2 [internal function]: Composer\\Autoload\\ClassLoader->loadClass('App\\\\Http\\\\Middle...')
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(912): ReflectionClass->__construct('App\\\\Http\\\\Middle...')
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(795): Illuminate\\Container\\Container->build('App\\\\Http\\\\Middle...')
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(986): Illuminate\\Container\\Container->resolve('App\\\\Http\\\\Middle...', Array, true)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(731): Illuminate\\Foundation\\Application->resolve('App\\\\Http\\\\Middle...', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(971): Illuminate\\Container\\Container->make('App\\\\Http\\\\Middle...', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(172): Illuminate\\Foundation\\Application->make('App\\\\Http\\\\Middle...')
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#11 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#12 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#13 {main}
+"} 
+[2025-09-16 16:33:41] local.ERROR: Class "App\Http\Middleware\Middleware" not found {"exception":"[object] (Error(code: 0): Class \"App\\Http\\Middleware\\Middleware\" not found at C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\TrustProxies.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(576): include()
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\composer\\ClassLoader.php(427): {closure:Composer\\Autoload\\ClassLoader::initializeIncludeClosure():575}('C:\\\\wamp64\\\\www\\\\m...')
+#2 [internal function]: Composer\\Autoload\\ClassLoader->loadClass('App\\\\Http\\\\Middle...')
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(912): ReflectionClass->__construct('App\\\\Http\\\\Middle...')
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(795): Illuminate\\Container\\Container->build('App\\\\Http\\\\Middle...')
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(986): Illuminate\\Container\\Container->resolve('App\\\\Http\\\\Middle...', Array, true)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(731): Illuminate\\Foundation\\Application->resolve('App\\\\Http\\\\Middle...', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(971): Illuminate\\Container\\Container->make('App\\\\Http\\\\Middle...', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(255): Illuminate\\Foundation\\Application->make('App\\\\Http\\\\Middle...')
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(213): Illuminate\\Foundation\\Http\\Kernel->terminateMiddleware(Object(Illuminate\\Http\\Request), Object(Illuminate\\Http\\Response))
+#10 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(60): Illuminate\\Foundation\\Http\\Kernel->terminate(Object(Illuminate\\Http\\Request), Object(Illuminate\\Http\\Response))
+#11 {main}
+"} 
+[2025-09-16 16:34:31] local.ERROR: Cannot redeclare class App\MySession (previously declared in C:\wamp64\www\maasin_live_act\app\MySession.php:8) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot redeclare class App\\MySession (previously declared in C:\\wamp64\\www\\maasin_live_act\\app\\MySession.php:8) at C:\\wamp64\\www\\maasin_live_act\\app\\Models\\MySession.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(244): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Cannot redecla...', code: '0', error: '['type' => 64, ...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(231): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 64, ...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(255): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->{closure:C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:254-256}()
+#4 {main}
+"} 
