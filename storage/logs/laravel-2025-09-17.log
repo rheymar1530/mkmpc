@@ -1,0 +1,16 @@
+[2025-09-17 12:24:53] local.ERROR: Cannot redeclare class App\MySession (previously declared in C:\wamp64\www\maasin_live_act\app\MySession.php:8) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot redeclare class App\\MySession (previously declared in C:\\wamp64\\www\\maasin_live_act\\app\\MySession.php:8) at C:\\wamp64\\www\\maasin_live_act\\app\\Models\\MySession.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(244): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Cannot redecla...', code: '0', error: '['type' => 64, ...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(231): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 64, ...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(255): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->{closure:C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:254-256}()
+#4 {main}
+"} 
+[2025-09-17 12:24:53] local.ERROR: Cannot redeclare class App\MySession (previously declared in C:\wamp64\www\maasin_live_act\app\MySession.php:8) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot redeclare class App\\MySession (previously declared in C:\\wamp64\\www\\maasin_live_act\\app\\MySession.php:8) at C:\\wamp64\\www\\maasin_live_act\\app\\Models\\MySession.php:8)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(244): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Cannot redecla...', code: '0', error: '['type' => 64, ...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(231): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 64, ...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(255): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->{closure:C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:254-256}()
+#4 {main}
+"} 

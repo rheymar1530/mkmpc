@@ -134,7 +134,7 @@
 						@foreach($deposits as $ch)
 						<tr class="lbl_color row-check">
 							<td>{{$ch->transaction_date}}</td>
-							<td>{{$ch->description}}</td>
+							<td><?php echo $ch->description; ?></td>
 							<td>{{$ch->reference}}</td>
 							<td>{{$ch->check_no}}</td>
 							<td>{{$ch->check_bank}}</td>
