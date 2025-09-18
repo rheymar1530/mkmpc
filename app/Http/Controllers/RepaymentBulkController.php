@@ -29,15 +29,16 @@ class RepaymentBulkController extends Controller
 
     public function PrintRepaymentOR($id_repayment){
         $details = DB::table('repayment')
-                   ->select('payment_for',DB::raw("DATE_FORMAT(date,'%m/%d/%Y') as date"))
+                   ->select('payment_for',DB::raw("DATE_FORMAT(date,'%m/%d/%Y') as date,change_payable"))
                    ->where('id_repayment',$id_repayment)
                    ->first();
-        $ItemMax = 7;
+        $ItemMax = 6;
 
         if($details->payment_for == 1){
             // Individual
             $d = DB::select("SELECT 
-            concat(m.last_name,', ',m.first_name) as payee,concat(ls.name,' - ',loan.id_loan) as description ,SUM(paid_principal+paid_interest+paid_fees) as amount,bl.name as barangay_lgu,m.address
+            concat(m.last_name,', ',m.first_name) as payee,concat(ls.name,' - ',loan.id_loan) as description ,SUM(paid_principal+paid_interest+paid_fees) as amount,bl.name as barangay_lgu,m.address,
+            r.change_payable
             FROM repayment as r
             LEFT JOIN repayment_transaction as rt on rt.id_repayment = r.id_repayment AND rt.status <> 10
             LEFT JOIN member as m on m.id_member = rt.id_member
@@ -120,10 +121,9 @@ class RepaymentBulkController extends Controller
                         ];
                     }
                 }
-
             }
-            $data['Transactions'] = $trans;
-            
+
+            $data['Transactions'] = $trans; 
         }else{
             //Per statement
             $d = DB::select("SELECT 
@@ -148,7 +148,7 @@ class RepaymentBulkController extends Controller
             ]; 
 
             $trans = array();
-
+    
             foreach($d as $tr){
                 $addDesc = count($payee) > 1 ? ($tr->payee." ") : '';
                 $trans[]= [
@@ -160,8 +160,12 @@ class RepaymentBulkController extends Controller
             $data['Transactions'] = $trans;
         }
 
-        $data['paymentDetails']['date'] = $details->date;
+        $data['Transactions'][] = [
+            'description' => 'CHANGE',
+            'amount' => $details->change_payable
+        ];
 
+        $data['paymentDetails']['date'] = $details->date;
 
         $addDetails = DB::table('repayment as r')
                       ->select(DB::raw("concat('OR# ',r.or_number) as or_number,concat('CHK# ',group_concat(rp.check_no)) as check_no"))
@@ -169,10 +173,11 @@ class RepaymentBulkController extends Controller
                       ->where('r.id_repayment',$id_repayment)
                       ->first();
 
-
         $data['paymentDetails']['or_number'] = $addDetails->or_number;
         $data['paymentDetails']['check_no'] = $addDetails->check_no;
 
+        $data['paymentDetails']['total_amount'] += $details->change_payable;
+ 
 
 
         return view('cash_receipt.mk-or',$data);
