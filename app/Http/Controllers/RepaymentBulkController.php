@@ -126,8 +126,9 @@ class RepaymentBulkController extends Controller
             $data['Transactions'] = $trans; 
         }else{
             //Per statement
+            // concat(if(type=1,'Brgy. ','LGU '), bl.name) as payee
             $d = DB::select("SELECT 
-            concat(if(type=1,'Brgy. ','LGU '), bl.name) as payee,DATE_FORMAT(statement_date,'%m-%Y') as statement_ref,SUM(total_payment) as amount
+            if(type=1,concat('Brgy. ',bl.name),'Municipality of Maasin') as payee,DATE_FORMAT(statement_date,'%m-%Y') as statement_ref,SUM(total_payment) as amount
             FROM (
             SELECT SUM(total_payment) as total_payment,rs.id_baranggay_lgu,rs.date as statement_date,rs.id_repayment_statement
             FROM repayment as r
@@ -325,13 +326,14 @@ class RepaymentBulkController extends Controller
             LEFT JOIN loan on loan.id_loan = sd.id_loan
             LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
             WHERE balance > 0
-            ORDER BY member",[$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment]);
+            ORDER BY member",[$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment]);
      
 
 
-    
+     
      
         }else{
+
             $id_repayment_statements = DB::table('repayment_transaction')
                                        ->select('id_repayment_statement')
                                        ->where('id_repayment',$id_repayment)

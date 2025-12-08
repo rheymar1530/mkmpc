@@ -16,10 +16,9 @@ class LoanAccruedController extends Controller
 
         $accruedLoan = DB::select("SELECT id_loan,date_released,maturity_date,principal_amount,if(id_loan_payment_type=1,interest_rate,interest_show) as interest_rate ,ROUND(principal_amount*(if(id_loan_payment_type=1,interest_rate,interest_show)/100),2) as interest_amt 
         FROM loan
-        WHERE loan_status = 1 AND maturity_date < ?  AND loan.id_loan_payment_type = 1  ;",[$dateAsOf]);
+        WHERE loan_status = 1 AND maturity_date < ?  AND loan.id_loan_payment_type = 1   AND id_loan = 20;",[$dateAsOf]);
 
-        dd($accruedLoan);
-        foreach($accruedLoan as $ac){
+         foreach($accruedLoan as $ac){
             $this->LoanAccrued($ac->id_loan,$ac->maturity_date,$ac->interest_amt);
         }  
 

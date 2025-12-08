@@ -1,0 +1,1086 @@
+[2025-12-07 01:35:15] local.ERROR: SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+            SELECT 
+            sd.id_loan,sd.id_member,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+            FROM (
+            SELECT rl.id_loan,rt.id_member,
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+            FROM repayment_transaction as rt
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+            WHERE rt.id_repayment = 1652
+            GROUP BY rl.id_loan
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+            WHERE balance > 0
+            ORDER BY member) {"exception":"[object] (Illuminate\\Database\\QueryException(code: HY093): SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+
+            SELECT 
+
+            sd.id_loan,sd.id_member,
+
+
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+
+            FROM (
+
+            SELECT rl.id_loan,rt.id_member,
+
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+
+            FROM repayment_transaction as rt
+
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+
+            WHERE rt.id_repayment = 1652
+
+            GROUP BY rl.id_loan
+
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+
+            WHERE balance > 0
+
+            ORDER BY member) at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#4 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#11 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 {main}
+
+[previous exception] [object] (PDOException(code: HY093): SQLSTATE[HY093]: Invalid parameter number at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:723)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(723): PDOStatement->bindValue(7, '1652', 2)
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(426): Illuminate\\Database\\Connection->bindValues(Object(PDOStatement), Array)
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->{closure:Illuminate\\Database\\Connection::select():414}('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#11 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#49 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#50 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#51 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#52 {main}
+"} 
+[2025-12-07 01:35:57] local.ERROR: SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+            SELECT 
+            sd.id_loan,sd.id_member,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+            FROM (
+            SELECT rl.id_loan,rt.id_member,
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+            FROM repayment_transaction as rt
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+            WHERE rt.id_repayment = 1652
+            GROUP BY rl.id_loan
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+            WHERE balance > 0
+            ORDER BY member) {"exception":"[object] (Illuminate\\Database\\QueryException(code: HY093): SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+
+            SELECT 
+
+            sd.id_loan,sd.id_member,
+
+
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+
+            FROM (
+
+            SELECT rl.id_loan,rt.id_member,
+
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+
+            FROM repayment_transaction as rt
+
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+
+            WHERE rt.id_repayment = 1652
+
+            GROUP BY rl.id_loan
+
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+
+            WHERE balance > 0
+
+            ORDER BY member) at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#4 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#11 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 {main}
+
+[previous exception] [object] (PDOException(code: HY093): SQLSTATE[HY093]: Invalid parameter number at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:723)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(723): PDOStatement->bindValue(7, '1652', 2)
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(426): Illuminate\\Database\\Connection->bindValues(Object(PDOStatement), Array)
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->{closure:Illuminate\\Database\\Connection::select():414}('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#11 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#49 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#50 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#51 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#52 {main}
+"} 
+[2025-12-07 01:36:04] local.ERROR: SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+            SELECT 
+            sd.id_loan,sd.id_member,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+            FROM (
+            SELECT rl.id_loan,rt.id_member,
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+            FROM repayment_transaction as rt
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+            WHERE rt.id_repayment = 1652
+            GROUP BY rl.id_loan
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+            WHERE balance > 0
+            ORDER BY member) {"exception":"[object] (Illuminate\\Database\\QueryException(code: HY093): SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+
+            SELECT 
+
+            sd.id_loan,sd.id_member,
+
+
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+
+            FROM (
+
+            SELECT rl.id_loan,rt.id_member,
+
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+
+            FROM repayment_transaction as rt
+
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+
+            WHERE rt.id_repayment = 1652
+
+            GROUP BY rl.id_loan
+
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+
+            WHERE balance > 0
+
+            ORDER BY member) at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#4 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#11 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 {main}
+
+[previous exception] [object] (PDOException(code: HY093): SQLSTATE[HY093]: Invalid parameter number at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:723)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(723): PDOStatement->bindValue(7, '1652', 2)
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(426): Illuminate\\Database\\Connection->bindValues(Object(PDOStatement), Array)
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->{closure:Illuminate\\Database\\Connection::select():414}('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#11 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#49 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#50 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#51 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#52 {main}
+"} 
+[2025-12-07 01:36:27] local.ERROR: SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+            SELECT 
+            sd.id_loan,sd.id_member,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+            FROM (
+            SELECT rl.id_loan,rt.id_member,
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+            FROM repayment_transaction as rt
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+            WHERE rt.id_repayment = 1652
+            GROUP BY rl.id_loan
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+            WHERE balance > 0
+            ORDER BY member) {"exception":"[object] (Illuminate\\Database\\QueryException(code: HY093): SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+
+            SELECT 
+
+            sd.id_loan,sd.id_member,
+
+
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+
+            FROM (
+
+            SELECT rl.id_loan,rt.id_member,
+
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+
+            FROM repayment_transaction as rt
+
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+
+            WHERE rt.id_repayment = 1652
+
+            GROUP BY rl.id_loan
+
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+
+            WHERE balance > 0
+
+            ORDER BY member) at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#4 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#11 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 {main}
+
+[previous exception] [object] (PDOException(code: HY093): SQLSTATE[HY093]: Invalid parameter number at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:723)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(723): PDOStatement->bindValue(7, '1652', 2)
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(426): Illuminate\\Database\\Connection->bindValues(Object(PDOStatement), Array)
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->{closure:Illuminate\\Database\\Connection::select():414}('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#11 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#49 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#50 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#51 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#52 {main}
+"} 
+[2025-12-07 01:36:37] local.ERROR: SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+            SELECT 
+            sd.id_loan,sd.id_member,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+            FROM (
+            SELECT rl.id_loan,rt.id_member,
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+            FROM repayment_transaction as rt
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+            WHERE rt.id_repayment = 1652
+            GROUP BY rl.id_loan
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+            WHERE balance > 0
+            ORDER BY member) {"exception":"[object] (Illuminate\\Database\\QueryException(code: HY093): SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+
+            SELECT 
+
+            sd.id_loan,sd.id_member,
+
+
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+
+            FROM (
+
+            SELECT rl.id_loan,rt.id_member,
+
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+
+            FROM repayment_transaction as rt
+
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+
+            WHERE rt.id_repayment = 1652
+
+            GROUP BY rl.id_loan
+
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+
+            WHERE balance > 0
+
+            ORDER BY member) at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#4 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#11 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 {main}
+
+[previous exception] [object] (PDOException(code: HY093): SQLSTATE[HY093]: Invalid parameter number at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:723)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(723): PDOStatement->bindValue(7, '1652', 2)
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(426): Illuminate\\Database\\Connection->bindValues(Object(PDOStatement), Array)
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->{closure:Illuminate\\Database\\Connection::select():414}('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#11 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#49 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#50 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#51 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#52 {main}
+"} 
+[2025-12-07 01:36:52] local.ERROR: SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+            SELECT 
+            sd.id_loan,sd.id_member,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+            FROM (
+            SELECT rl.id_loan,rt.id_member,
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+            FROM repayment_transaction as rt
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+            WHERE rt.id_repayment = 1652
+            GROUP BY rl.id_loan
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+            WHERE balance > 0
+            ORDER BY member) {"exception":"[object] (Illuminate\\Database\\QueryException(code: HY093): SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, SQL: SELECT * FROM (
+
+            SELECT 
+
+            sd.id_loan,sd.id_member,
+
+
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,1) as principal_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,2) as interest_balance,
+
+            getTotalDueTypeRepaymentX(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652,4) as surcharge_balance,
+
+            getTotalDueAsOfRepaymentEx(loan.id_loan,if('2025-12-31' > loan.maturity_date,'2025-12-31',loan.maturity_date),1652) as balance,
+
+            @cur_due:=getTotalDueAsOfRepaymentEx(loan.id_loan,sd.payment_dueDate,1652) as current_due,payment,
+
+            FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,
+
+            getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms) as loan_name,loan.loan_token,sd.ref_amount as ref_amount
+
+            FROM (
+
+            SELECT rl.id_loan,rt.id_member,
+
+            SUM(paid_principal+paid_interest+paid_fees+paid_surcharge) as payment ,rt.date as payment_dueDate,lt.repayment_amount+lt.interest_amount as ref_amount
+
+            FROM repayment_transaction as rt
+
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction
+
+            LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND rl.term_code = lt.term_code
+
+            WHERE rt.id_repayment = 1652
+
+            GROUP BY rl.id_loan
+
+            HAVING SUM(paid_principal+paid_interest+paid_surcharge)) as sd
+
+            LEFT JOIN member as m on m.id_member  = sd.id_member
+
+            LEFT JOIN loan on loan.id_loan = sd.id_loan
+
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
+
+            WHERE balance > 0
+
+            ORDER BY member) at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#4 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#11 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 {main}
+
+[previous exception] [object] (PDOException(code: HY093): SQLSTATE[HY093]: Invalid parameter number at C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:723)
+[stacktrace]
+#0 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(723): PDOStatement->bindValue(7, '1652', 2)
+#1 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(426): Illuminate\\Database\\Connection->bindValues(Object(PDOStatement), Array)
+#2 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->{closure:Illuminate\\Database\\Connection::select():414}('SELECT * FROM (...', Array)
+#3 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('SELECT * FROM (...', Array, Object(Closure))
+#4 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(414): Illuminate\\Database\\Connection->run('SELECT * FROM (...', Array, Object(Closure))
+#5 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\DatabaseManager.php(509): Illuminate\\Database\\Connection->select('SELECT * FROM (...', Array)
+#6 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\DatabaseManager->__call('select', Array)
+#7 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Controllers\\RepaymentBulkController.php(304): Illuminate\\Support\\Facades\\Facade::__callStatic('select', Array)
+#8 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\RepaymentBulkController->edit('1652', Object(Illuminate\\Http\\Request))
+#9 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('edit', Array)
+#10 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\RepaymentBulkController), 'edit')
+#11 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#12 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#13 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#14 C:\\wamp64\\www\\maasin_live_act\\app\\Http\\Middleware\\SessionExpired.php(48): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#15 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): App\\Http\\Middleware\\SessionExpired->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#16 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#17 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#18 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#19 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#21 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#24 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#26 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#28 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#30 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#31 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#32 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#33 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#34 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#35 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#36 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#37 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#40 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#43 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#45 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#46 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#47 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#49 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#50 C:\\wamp64\\www\\maasin_live_act\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#51 C:\\wamp64\\www\\maasin_live_act\\public\\index.php(54): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#52 {main}
+"} 
