@@ -71,7 +71,6 @@ class BankTransactionController extends Controller
         if($request->ajax()){
             $transactions = $request->transactions;
             $id_bank_to = array();
-
             foreach($transactions as $t){
                 if(isset($t['id_bank_transfer_to'])){
                     array_push($id_bank_to,$t['id_bank_transfer_to']);
@@ -88,6 +87,10 @@ class BankTransactionController extends Controller
                     }
                 }
             }
+
+     
+
+            // return response($request);
 
             $opcode = $request->opcode;
             $id_bank_transaction = $request->id_bank_transaction;
@@ -108,9 +111,10 @@ class BankTransactionController extends Controller
 
                         $id_bank_transaction = DB::table('bank_transaction')->max('id_bank_transaction');
 
+
                         if($transactions[$i]['type'] == 1){
-                            JVModel::BankTransactionJV($id_bank_transaction);
                             // CDVModel::BankTransactionCDV($id_bank_transaction);
+                             JVModel::BankTransactionJV($id_bank_transaction);
                         }elseif($transactions[$i]['type'] == 2){
                             // CRVModel::BankTransactionCRV($id_bank_transaction);
                             CDVModel::BankTransactionCDV($id_bank_transaction);
@@ -118,10 +122,14 @@ class BankTransactionController extends Controller
                             JVModel::BankTransactionJV($id_bank_transaction);
                         }
                        
+
+                    
                         // $id_journal_voucher = $this->postJV($opcode,$id_bank_transaction);
 
                         // DB::table('bank_transaction')->where('id_bank_transaction',$id_bank_transaction)->update(['id_journal_voucher'=>$id_journal_voucher]);
+
                     }
+      
 
                     $id_bank_transaction = DB::table('bank_transaction')->max('id_bank_transaction');            
                 }else{ // Edit
@@ -135,9 +143,11 @@ class BankTransactionController extends Controller
                     ->update($transactions[0]);
 
                     if($transactions[0]['type'] == 1){
-                        CDVModel::BankTransactionCDV($id_bank_transaction);
+                        // CDVModel::BankTransactionCDV($id_bank_transaction);
+                        JVModel::BankTransactionJV($id_bank_transaction);
                     }elseif($transactions[0]['type'] == 2){
-                        CRVModel::BankTransactionCRV($id_bank_transaction);
+                        // CRVModel::BankTransactionCRV($id_bank_transaction);
+                        CDVModel::BankTransactionCDV($id_bank_transaction);
                     }else{
                         JVModel::BankTransactionJV($id_bank_transaction);
                     }
@@ -146,6 +156,7 @@ class BankTransactionController extends Controller
                 $data['COMMAND'] = ($opcode == 1 || count($transactions) == 1)?"RELOAD":"LIST";
                 $data['redirect_id'] = $id_bank_transaction;
             }
+
 
             return response($data);
         }
