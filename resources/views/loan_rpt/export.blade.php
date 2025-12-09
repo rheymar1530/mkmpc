@@ -240,8 +240,8 @@
 		@endif
 
 		<p class="mb-0">Prepared by: </p>	
-		<p class="mb-0" style="margin-left: 1in;font-weight: bold;">Josephine S. Manero </p>	
-		<p class="mb-0" style="margin-left: 1in;margin-top: 0;">Manager</p>	
+		<p class="mb-0" style="margin-left: 1in;font-weight: bold;">{{config('variables.loan_disbursement_prepared')}} </p>	
+		<p class="mb-0" style="margin-left: 1in;margin-top: 0;">Loan Officer</p>	
 	</div>
 
 </body>

@@ -12,3 +12,4 @@ npm-debug.log
 yarn-error.log
 /BACKUP
 storage/framework/views
+ storage/logs/*

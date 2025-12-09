@@ -105,36 +105,7 @@ class LoanDeliquentController extends Controller
 
 
         $query_date = WebHelper::ConvertDatePeriod($date);
-
-        // $query_date = $date;
         $start_date = date("Y-m-01",strtotime("$query_date"));
-
-        // $param = [
-        //     'st1' => $start_date,
-        //     'end1' => $query_date,
-        //     'end2' => $query_date,
-        //     'end3' => $query_date,
-        //     'end4' => $query_date
-        // ];
-        // // dd($param);
-        // $overdues = DB::select("SELECT loans.*,@current_payment:=getLoanTotalPaymentMonth(loans.id_loan,:st1,:end1) as current_payment,principal_balance+interest_balance as total_due,ROUND(@current_payment+(principal_balance+interest_balance),2) as month_total_due FROM (
-        //     SELECT loan.id_member,loan.id_loan,concat(getLoanServiceName(loan.id_loan_payment_type,ls.name,loan.terms)) as 'loan_name',MAX(due_date) as as_of,getPrincipalBalanceAsOf(loan.id_loan,:end2) as principal_balance,getInterestBalanceAsOf(loan.id_loan,:end3) as interest_balance,UPPER(FormatName(m.first_name,m.middle_name,m.last_name,m.suffix)) as member_name,loan.loan_token,m.email
-        //     FROM loan
-        //     LEFT JOIN loan_table as lt on lt.id_loan = loan.id_loan
-        //     LEFT JOIN member as m on m.id_member = loan.id_member
-        //     LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service
-        //     WHERE lt.due_date <= :end4 AND loan.loan_status = 1
-        //     GROUP BY loan.id_loan) as loans
-        // WHERE (loans.principal_balance+interest_balance) > 0 
-        // GROUP BY loans.id_loan
-        // ORDER BY member_name,loans.id_loan;",$param);
-
-        // $g = new GroupArrayController();
-
-        // $overdues = $g->array_group_by($overdues,['id_member']);
-
-        // return $overdues;
-        // $type = 2;
 
         $param = [
             'end1' => $query_date,
