@@ -79,7 +79,7 @@ class LoanAccruedController extends Controller
         $accruedLoan = DB::select("SELECT loan.id_loan,MIN(lt.due_date) as date_start,loan.maturity_date as date_end
         FROM loan
         LEFT JOIN loan_table as lt on lt.id_loan = loan.id_loan
-        WHERE loan_status = 1 AND maturity_date < ?  AND  lt.accrued = 0  GROUP BY loan.id_loan;",[$dateAsOf]);
+        WHERE loan_status = 1 AND maturity_date < ?  AND  lt.accrued = 0 AND loan.id_loan = 1510   GROUP BY loan.id_loan;",[$dateAsOf]);
 
     
         foreach($accruedLoan as $al){

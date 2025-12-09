@@ -209,7 +209,7 @@ class LoanApprovalController extends Controller
             $cbu = Member::CheckCBU($data['service_details']->cbu_amount,$service_details->id_member);
 
 
-   
+            
 
             $previous_loan = Member::CheckPreviousLoan($service_details->id_loan_service,$service_details->id_member,$service_details->terms_token);
             $loan_parameter = [
@@ -253,7 +253,7 @@ class LoanApprovalController extends Controller
             }
             $data['loan'] = Loan::ComputeLoan($loan_parameter);
             $id_loan = $service_details->id_loan;
-  
+                   
         }else{
      
             $priv =  MySession::myPrivilegeId();
@@ -261,6 +261,8 @@ class LoanApprovalController extends Controller
 
             $id_loan = $loan->id_loan;
             $data = Loan::LoanDetails($id_loan);
+
+
 
             $data['loan_status'] =$loan_status;
 
@@ -377,7 +379,7 @@ class LoanApprovalController extends Controller
         $data['current_date'] = MySession::current_date();
 
         $data['LOAN_BALANCE'] = Loan::LoanOverallBalance([$id_loan],0);
-
+  
         $data['DISCOUNT'] = DB::table('repayment_loan_discount as rld')
                             ->leftJoin('repayment_transaction as rt','rt.id_repayment_transaction','rld.id_repayment_transaction')
                             ->Where('rld.id_loan',$id_loan)
@@ -465,7 +467,7 @@ class LoanApprovalController extends Controller
                     $due_dates = $this->getLoanDueDate($request->date_released,$loan_details->terms);
                     $this->add_loan_due_date($loan_details->id_loan,$due_dates);
                 }
-
+              
                 if($loan['LOAN_BALANCE'] > 0){
                     Loan::PayPreviousLoan($loan_details->id_loan_service,$loan_details->id_member,$request->date_released,$loan_details->terms_token,$loan_details->id_loan);
                 }

@@ -994,8 +994,6 @@ class LoanApplicationController extends Controller
             $view = "loan.loan_form_display";
         }
         $data['isAdmin'] = MySession::isAdmin();
-        // dd($data);
-
 
         return view($view,$data);;
     }
