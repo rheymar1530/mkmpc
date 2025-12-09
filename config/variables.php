@@ -50,13 +50,9 @@
 		'v_released_by'=>'AGNES V. AMORTE',
 		'treasurer'=>'AGNES V. AMORTE',
 
-
-
-
 		'loan_disbursement_prepared'=>'NONALYN M. MANDATE',
 		'disbursement_prepapred'=>'AGNES V. AMORTE',
 
-		
 		//Loan Fees (previous payment and rebates)
 		// 'previous_loan_payment' =>33,
 		// 'previous_loan_rebates' => 34

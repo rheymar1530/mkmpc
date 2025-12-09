@@ -651,13 +651,6 @@ class CDVModel extends Model
             $id_cash_disbursement = DB::table('cash_disbursement')->where('type',$type)->where('reference',$id_change_payable)->max('id_cash_disbursement');       
 
         }else{
-            // dd("WOW");
-            // DB::select("UPDATE change_payable_details as cpd 
-            // LEFT JOIN change_payable as cp on cp.id_change_payable = cpd.id_change_payable
-            // LEFT JOIN cash_disbursement as cd on cd.id_cash_disbursement = $id_cash_disbursement
-            // SET cd.date = cp.date,cd.description=concat('TO RELEASE THE CHANGE UNDER REPAYMENT ID#', cp.id_repayment),cd.total = cpd.amount
-            // where cpd.id_member =? AND cp.id_change_payable =?",[$id_member,$id_change_payable]);
-
             DB::select("UPDATE (
             SELECT date,concat('TO RELEASE THE CHANGE UNDER REPAYMENT ID#', cp.id_repayment) as description,0 as status,SUM(cpd.amount) as amount,cp.id_cash_disbursement
             FROM change_payable_details as cpd 

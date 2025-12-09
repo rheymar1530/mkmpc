@@ -126,8 +126,9 @@ class RepaymentBulkController extends Controller
             $data['Transactions'] = $trans; 
         }else{
             //Per statement
+            // concat(if(type=1,'Brgy. ','LGU '), bl.name) as payee
             $d = DB::select("SELECT 
-            concat(if(type=1,'Brgy. ','LGU '), bl.name) as payee,DATE_FORMAT(statement_date,'%m-%Y') as statement_ref,SUM(total_payment) as amount
+            if(type=1,concat('Brgy. ',bl.name),'Municipality of Maasin') as payee,DATE_FORMAT(statement_date,'%m-%Y') as statement_ref,SUM(total_payment) as amount
             FROM (
             SELECT SUM(total_payment) as total_payment,rs.id_baranggay_lgu,rs.date as statement_date,rs.id_repayment_statement
             FROM repayment as r
