@@ -326,13 +326,14 @@ class RepaymentBulkController extends Controller
             LEFT JOIN loan on loan.id_loan = sd.id_loan
             LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
             WHERE balance > 0
-            ORDER BY member",[$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment]);
+            ORDER BY member",[$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment]);
      
 
 
-    
+     
      
         }else{
+
             $id_repayment_statements = DB::table('repayment_transaction')
                                        ->select('id_repayment_statement')
                                        ->where('id_repayment',$id_repayment)

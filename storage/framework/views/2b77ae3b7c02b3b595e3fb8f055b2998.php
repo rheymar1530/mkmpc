@@ -133,7 +133,7 @@
 						<?php $__currentLoopData = $deposits; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ch): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 						<tr class="lbl_color row-check">
 							<td><?php echo e($ch->transaction_date); ?></td>
-							<td><?php echo e($ch->description); ?></td>
+							<td><?php echo $ch->description; ?></td>
 							<td><?php echo e($ch->reference); ?></td>
 							<td><?php echo e($ch->check_no); ?></td>
 							<td><?php echo e($ch->check_bank); ?></td>

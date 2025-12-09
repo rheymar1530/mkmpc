@@ -144,7 +144,7 @@
 	}
 </style>
 <?php
-$paymode = [1=>"Cash",2=>"Check"];
+$paymode = [1=>"Cash/Bank",2=>"Check"];
 
 $payee_type = [
 	1=>"Supplier",

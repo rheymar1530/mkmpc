@@ -200,11 +200,12 @@ class RepaymentStatementController extends Controller
 
         $stDate = date('Y-m-01',strtotime($param['date1']));
 
-        $param['stDate1'] = $param['stDate2'] = $stDate;
+        $param['date1']=$param['date5']=$param['stDate1'] = $param['stDate2'] = $stDate;
+        
 
-
+        // dd($param);
         $param['id_repayment_statement'] = $id_repayment_statement;
-
+        // dd($param);
         $loans = DB::select("WITH loans AS (
             SELECT loan.id_loan,
             SUM(CASE WHEN lt.due_date < :date1 THEN lt.repayment_amount + lt.interest_amount + lt.fees ELSE 0 END) as previous_balance,
@@ -245,7 +246,7 @@ class RepaymentStatementController extends Controller
         LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service
         LEFT JOIN repayment_statement_details as rsd on rsd.id_repayment_statement = :id_repayment_statement AND rsd.id_loan = loan.id_loan
         ORDER BY member;",$param);
-
+        // dd($loans);
         return $loans;
     }
 
@@ -327,7 +328,7 @@ class RepaymentStatementController extends Controller
                         $data['RESPONSE_CODE'] = "ERROR";
                         $data['message'] = "Invalid Statement Amount on {$l[0]->loan_name} - {$l[0]->member}";
                         $data['message2'] = "Loan Balance : {$loanBal}";
-
+                        // dd(floatval($l[0]->actual_balance));
                         // dd(1234);
 
                         return response($data);
