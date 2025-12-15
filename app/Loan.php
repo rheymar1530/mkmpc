@@ -54,8 +54,15 @@ class Loan extends Model
                 'year'=>$start_year
             ];
 
+            if($startObj['month'] == "13"){
+                $startObj = [
+                    'month' => "01",
+                    'year'=> $startObj['year']+1
 
-
+                ];
+            }
+  
+        
           
 
             $endObj = [
@@ -98,8 +105,8 @@ class Loan extends Model
             // $maturityYear = ($due_year >= $minYear)?$due_year:$minYear;
             $maturity_date = date('Y-m-d',strtotime("{$year_end}-{$end_month}-{$ser->repayment_schedule}"));
 
-            // dd($maturity_date);
-
+          
+            // dd($matu)
             $arrayMonths = self::generateMonthlyDates($startTemp,$maturity_date);
 
             // dd($arrayMonths);
@@ -135,8 +142,7 @@ class Loan extends Model
 
 
         $out['duration'] = $duration;
-
-        // dd($out);
+ 
 
         // dd($out);
         return $out;
@@ -145,7 +151,7 @@ class Loan extends Model
     }
 
     public static function generateMonthlyDates($startDate, $endDate){
-
+ 
         $dates = [];
         $currentDate = Carbon\Carbon::parse($startDate);
         $endDate = Carbon\Carbon::parse($endDate);
