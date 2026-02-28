@@ -1,0 +1,25 @@
+{
+    "Laravel Controller": {
+        "prefix": "ctrl",
+        "body": [
+            "public function ${1:index}()",
+            "{",
+            "    $2",
+            "}"
+        ]
+    },
+    "Blade Section": {
+        "prefix": "bsection",
+        "body": [
+            "@section('${1:content}')",
+            "    $2",
+            "@endsection"
+        ]
+    },
+    "Route GET": {
+        "prefix": "rget",
+        "body": [
+            "Route::get('${1:/}', [${2:Controller}::class, '${3:index}']);"
+        ]
+    }
+}

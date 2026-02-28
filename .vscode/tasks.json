@@ -1,0 +1,26 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "php artisan test",
+            "group": "test"
+        },
+        {
+            "label": "Pint Fix Code",
+            "type": "shell",
+            "command": "vendor/bin/pint"
+        },
+        {
+            "label": "Clear Cache",
+            "type": "shell",
+            "command": "php artisan optimize:clear"
+        },
+        {
+            "label": "Migrate Fresh",
+            "type": "shell",
+            "command": "php artisan migrate:fresh --seed"
+        }
+    ]
+}

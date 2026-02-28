@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "bmewburn.vscode-intelephense-client",
+        "open-sourcerers.laravel-pint",
+        "onecentlin.laravel-extension-pack",
+        "amiralizadeh9480.laravel-extra-intellisense",
+        "esbenp.prettier-vscode",
+        "formulahendry.auto-rename-tag",
+        "ecmel.vscode-html-css",
+        "mikestead.dotenv",
+        "mehedidracula.php-namespace-resolver",
+        "xdebug.php-debug"
+    ]
+}
