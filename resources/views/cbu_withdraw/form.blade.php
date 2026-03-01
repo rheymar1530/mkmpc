@@ -50,7 +50,7 @@ $sel_reason = $details->reason ?? 1;
 						<input type="text" class="form-control" value="{{$details->mode}}" disabled>
 
 					</div>
-				
+
 				</div>
 				@endif
 
@@ -162,10 +162,10 @@ $sel_reason = $details->reason ?? 1;
 <script type="text/javascript">
 
 	$(document).on('ready',function(){
-		
+
 	});
 	intialize_select2();
-	function intialize_select2(){		
+	function intialize_select2(){
 		$link = '/search_member'
 		$("#sel_member").select2({
 			minimumInputLength: 2,
@@ -211,7 +211,7 @@ $sel_reason = $details->reason ?? 1;
 				CURRENT_CBU = response.cbu_amount;
 				init_reason();
 
-				$('#txt_amount').val(number_format(CURRENT_CBU,2));	
+				$('#txt_amount').val(number_format(CURRENT_CBU,2));
 			}
 		})
 	})
@@ -220,28 +220,8 @@ $sel_reason = $details->reason ?? 1;
 		$(".select2-search__field[aria-controls='select2-" + selectId + "-results']").each(function(key,value,){
 			value.focus()
 		})
-	}) 
-	$(document).on("focus",".class_amount",function(){
-		var val = $(this).val();
-		if(val == '' || val == 'NaN'){
-			val = '0.00';
-
-			$(this).val('');
-
-			return; 
-		}
-		$(this).val(decode_number_format(val)); 
 	})
-	$(document).on("blur",".class_amount",function(){
-		var val = $(this).val();
-		if(!$.isNumeric(val)){
-			val = 0;
-			$(this).val('');
 
-			return;
-		}
-		$(this).val(number_format(parseFloat(val)));
-	})
 	$('#frm_post_cbu').on('submit',function(e){
 		e.preventDefault();
 		Swal.fire({
@@ -253,8 +233,8 @@ $sel_reason = $details->reason ?? 1;
 		}).then((result) => {
 			if (result.isConfirmed) {
 				post();
-			} 
-		})	
+			}
+		})
 	})
 	function post(){
 		var post_data = {
@@ -294,7 +274,7 @@ $sel_reason = $details->reason ?? 1;
 						cancelButtonText: 'Back to List of Withdrawal',
 						showDenyButton: false,
 
-						showConfirmButton : true,     
+						showConfirmButton : true,
 						allowEscapeKey : false,
 						allowOutsideClick: false
 					}).then((result) => {
@@ -303,7 +283,7 @@ $sel_reason = $details->reason ?? 1;
 						}else{
 							window.location = '<?php echo $back_link;?>';
 						}
-					});	
+					});
 				}else if(response.RESPONSE_CODE == "ERROR"){
 					Swal.fire({
 						title: response.message,

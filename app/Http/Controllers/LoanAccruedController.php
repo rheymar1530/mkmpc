@@ -79,7 +79,7 @@ class LoanAccruedController extends Controller
         $accruedLoan = DB::select("SELECT loan.id_loan,MIN(lt.due_date) as date_start,loan.maturity_date as date_end
         FROM loan
         LEFT JOIN loan_table as lt on lt.id_loan = loan.id_loan
-        WHERE loan_status = 1 AND maturity_date < ?  AND  lt.accrued = 0 AND loan.id_loan = 1510   GROUP BY loan.id_loan;",[$dateAsOf]);
+        WHERE loan_status = 1 AND maturity_date < ?  AND  lt.accrued = 0 GROUP BY loan.id_loan;",[$dateAsOf]);
 
     
         foreach($accruedLoan as $al){
@@ -87,7 +87,7 @@ class LoanAccruedController extends Controller
             $SurchargeStart = $SurchargeStart->addMonth(2)->format('Y-m-d');
 
             $MonthsAccrued = Loan::generateMonthlyDates(date("Y-m-01", strtotime("$SurchargeStart")),date("Y-m-01", strtotime("$dateAsOf")));
-
+          
             $debug = array();
 
             $loanTable = DB::table('loan_table')
@@ -106,15 +106,18 @@ class LoanAccruedController extends Controller
                     $month_due = date("Y-m-t", strtotime("$mo"));
 
                     if($month_due > $loanTable->last_date){
+                       
                         $count++;
                         $monthCheck = Carbon\Carbon::parse($mo)->addMonth(-1)->format('Y-m-d');
                         $monthCheck= date("Y-m-t", strtotime("$monthCheck"));
+
+                        // dd($monthCheck);
 
                         $loanBalance = $this->getLoanBalanceAsOfMonth($al->id_loan,$monthCheck);
 
                         $balance = $loanBalance->balance;
 
-
+                        // dd($balance);
                         $surcharge = round($balance*0.02,2);
 
                         $MonthOBJ[]=[
@@ -170,7 +173,7 @@ class LoanAccruedController extends Controller
         FROM repayment_loans as rl
         LEFT JOIN loan_table as lt on lt.id_loan = rl.id_loan AND lt.term_code = rl.term_code
         LEFT JOIN repayment_transaction as rt on rt.id_repayment_transaction = rl.id_repayment_transaction
-        WHERE rl.id_loan = :id_loan2 AND rt.status <> 10 AND rt.transaction_date <= :date
+        WHERE rl.id_loan = :id_loan2 AND rt.status <> 10 AND (rt.transaction_date <= :date )
         )
         SELECT 
         principal-ifnull(paid_principal,0) as principal_balance,
@@ -179,6 +182,8 @@ class LoanAccruedController extends Controller
         (principal+interest+fees)-(ifnull(paid_principal,0)+ifnull(paid_interest,0)+ifnull(paid_fees,0)) as balance
         FROM loan_total
         LEFT JOIN payments as p on p.id_loan = loan_total.id_loan",$p)[0];
+
+        // OR (rt.id_cash_receipt_voucher + rt.id_journal_voucher > 0)
 
         return $out;
     }

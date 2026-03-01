@@ -37,7 +37,7 @@
 				if(!in_array($key,$field_not_amt)){
 					$total[$key] = 0;
 				}
-				
+
 			?>
 			@endforeach
 		</tr>
@@ -45,12 +45,12 @@
 	<tbody>
 		@foreach($cbus as $c=>$row)
 		<tr>
-			
+
 			@foreach($row as $key=>$val)
 
 			@if(!in_array($key,$field_not_amt))
 			<td class="class_amount {{ ($val==0)?'text-centered':''}}">{{check_zero($val)}}</td>
-			<?php 
+			<?php
 				if($key=="Total"){
 					$grand_total += $val;
 				}
@@ -71,6 +71,6 @@
 	</tbody>
 	</table>
 </body>
-</html>  	  	  	  	  	 
-							
+</html>
+
 

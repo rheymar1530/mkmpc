@@ -40,7 +40,7 @@ class PaidInterestSummaryController extends Controller
 		return $data;
 	}
 
-	public function parseData($start_month,$end_month,$year){
+	public function parseData($start_month,$end_month,$year,$mode = 0){
 		// $start_month = 1;
 		// $end_month = 12;
 		// $year = 2022;
@@ -96,7 +96,7 @@ class PaidInterestSummaryController extends Controller
 // 			-- GROUP BY rt.id_member,MONTH(transaction_date),YEAR(transaction_date)
 // 			-- UNION ALL
 // 			/*******************DEDUCTED INTEREST FROM LOAN*********************************/
-// 			-- SELECT id_member,date_released,lc.value FROM loan 
+// 			-- SELECT id_member,date_released,lc.value FROM loan
 // 			-- LEFT JOIN loan_charges as lc on loan.id_loan = lc.id_loan
 // 			-- where deduct_interest =1 and loan.status <> 4 and date_released >= ? AND date_released <= ? AND id_loan_fees=12
 
@@ -130,12 +130,16 @@ class PaidInterestSummaryController extends Controller
 // 		GROUP BY interest_table.id_member
 // 		ORDER BY Names;";
 // //  and cd.type=4
-			
+
 // 		$data['interest_table'] = DB::select($sql_query,[env('BEGINNING_DATE'),$dt_query_end,$dt_query_start,$dt_query_end,$dt_query_start,$dt_query_end,$dt_query_start,$dt_query_end,$dt_query_start,$dt_query_end]);
-
-
+		$having = '';
+		$id_memberQ = '';
+		if($mode  == 1){
+			$having = "HAVING SUM(amount) > 0";
+			$id_memberQ = "m.id_member,";
+		}
 		$acc = config('variables.paid_interest_summary_account');
-		$sql_query = "SELECT concat(m.last_name,if(m.suffix='','',concat(' ',m.suffix,' ')),', ',m.first_name,' ',if(m.middle_name <> '',UPPER(concat(LEFT(m.middle_name,1),'.')),'')) as Names,
+		$sql_query = "SELECT {$id_memberQ} concat(m.last_name,if(m.suffix='','',concat(' ',m.suffix,' ')),', ',m.first_name,' ',if(m.middle_name <> '',UPPER(concat(LEFT(m.middle_name,1),'.')),'')) as Names,
 		$month_query
 		,SUM(amount) as Total
 		FROM (
@@ -153,7 +157,7 @@ class PaidInterestSummaryController extends Controller
 		SELECT jv.id_member,jv.date as transaction_date,(credit-debit) FROM cash_disbursement as jv
 		LEFT JOIN cash_disbursement_details as jvd on jvd.id_cash_disbursement = jv.id_cash_disbursement
 		WHERE  jvd.id_chart_account in ($acc) and jv.status <> 10 and jv.date >= ? and jv.date <= ? AND jv.id_member >0
-		UNION ALL 
+		UNION ALL
 		/*******BEGINNING****/
 		SELECT id_member,date as transaction_date,amount FROM interest_beginning
 		WHERE date >= ? AND date <= ?
@@ -161,16 +165,17 @@ class PaidInterestSummaryController extends Controller
 		/*******AUTO FILL MEMBER****/
 		SELECT id_member,'2022-01-01' as date,0 as amount
 		FROM member
-		WHERE status = 1			
+		WHERE status = 1
 			) as interest_table
 		LEFT JOIN member as m on m.id_member = interest_table.id_member
 		GROUP BY interest_table.id_member
+		{$having}
 		ORDER BY Names;";
 
 
 		$data['interest_table'] = DB::select($sql_query,[$dt_query_start,$dt_query_end,$dt_query_start,$dt_query_end,$dt_query_start,$dt_query_end,$dt_query_start,$dt_query_end]);
 
-		// dd($data);
+
 		return $data;
 		return $data;
 

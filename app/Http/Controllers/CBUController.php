@@ -16,7 +16,7 @@ use App\Exports\CBUExport;
 
 class CBUController extends Controller
 {
-    public function index(Request $request){    
+    public function index(Request $request){
         $data['isAdmin'] = MySession::isAdmin();
         $data['id_member'] = MySession::myId();
 
@@ -46,8 +46,8 @@ class CBUController extends Controller
         // dd($data);
 
         $data['file_name'] = DB::table('member')->select(DB::raw("concat('CBU - ',last_name,' ',first_name) as file_name"))->where('id_member',$data['id_member'])->first()->file_name ?? '';
-        $data['cbu_ledger'] = DB::select("CALL getMemberCBULedger2(?,?,?);",[$data['id_member'],$data['start_date'],$data['end_date']]);        
- 
+        $data['cbu_ledger'] = DB::select("CALL getMemberCBULedger2(?,?,?);",[$data['id_member'],$data['start_date'],$data['end_date']]);
+
 
         return Excel::download(new CBUExport($data['cbu_ledger'],1), $data['file_name'].".xlsx");
 
@@ -60,7 +60,7 @@ class CBUController extends Controller
         $data['credential']= CredentialModel::GetCredential(MySession::myPrivilegeId());
         if(!$data['credential']->is_view){
             return redirect('/redirect/error')->with('message', "privilege_access_invalid");
-        }   
+        }
         $data['head_title'] = "CBU Report";
         $date=$data['date'] = $request->date ?? MySession::current_date();
 
@@ -83,7 +83,7 @@ class CBUController extends Controller
 
     public function parseCBUReportData($date){
         return DB::select("SELECT m.id_member,FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as member,SUM(amount) as amount   FROM (
-            SELECT ifnull(amount,0) as amount,id_member 
+            SELECT ifnull(amount,0) as amount,id_member
             FROM cash_receipt_details as cd
             LEFT JOIN cash_receipt as c on c.id_cash_receipt = cd.id_cash_receipt
             LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = cd.id_payment_type
@@ -155,7 +155,7 @@ class CBUController extends Controller
         $pdf->setOption('margin-right', '0.33in');
         $pdf->setOption('margin-left', '0.42in');
         $pdf->setOption('header-left', 'Page [page] of [toPage]');
-    
+
         $pdf->setOption('header-font-size', 8);
         $pdf->setOption('header-font-name', 'Calibri');
         $pdf->setOrientation('landscape');
@@ -172,7 +172,7 @@ class CBUController extends Controller
         date_default_timezone_set('Asia/Manila');
         $dt = new DateTime();
         $year = $request->year ?? $dt->format('Y');
-        $m = ($year == $dt->format('Y'))?MySession::current_month():12;     
+        $m = ($year == $dt->format('Y'))?MySession::current_month():12;
 
         // dd((int)$m);
         $data = $this->parseCBUMonthly(1,$m,$year);
@@ -185,7 +185,7 @@ class CBUController extends Controller
         $data['selected_year'] = $year;
         $data['end_month'] = $end_month;
         $month_query= "";
-        $month_query_ar = array();       
+        $month_query_ar = array();
         $period_start = date("Y-m-01", strtotime("$year-$start_month-01"));
         array_push($month_query_ar,"SUM(CASE WHEN transaction_date < '$period_start' THEN amount ELSE 0 END) as '".($year-1)."'");
 
@@ -198,8 +198,8 @@ class CBUController extends Controller
             }else{
                 $q = "SUM(CASE WHEN transaction_date <= '$dt_e' THEN amount ELSE 0 END) as '$month_text'";
             }
-            
-            
+
+
             array_push($month_query_ar,$q);
         }
 
@@ -209,10 +209,25 @@ class CBUController extends Controller
         $month_query = implode(",",$month_query_ar);
         $group_order = (!$dashboard)?"GROUP BY CBU.id_member Order By Name;":"";
 
+
+        $BaseQuery = $this->CBUMonthlyQueryBase();
         $sql_query="SELECT FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as Name,
         $month_query
         ,SUM(amount)  as 'Total'   FROM (
-            SELECT c.date_received as transaction_date,ifnull(amount,0) as amount,id_member 
+            $BaseQuery
+        ) as CBU
+        LEFT JOIN member as m on m.id_member = CBU.id_member
+        $group_order
+
+        ";
+
+        $data['cbus'] = DB::select($sql_query,[$dt_query_end,$dt_query_end,$dt_query_end,$dt_query_end,$dt_query_end,$dt_query_end]);
+
+        return $data;
+    }
+
+    public function CBUMonthlyQueryBase(){
+        $sql = "SELECT c.date_received as transaction_date,ifnull(amount,0) as amount,id_member
             FROM cash_receipt_details as cd
             LEFT JOIN cash_receipt as c on c.id_cash_receipt = cd.id_cash_receipt
             LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = cd.id_payment_type
@@ -241,16 +256,8 @@ class CBUController extends Controller
             LEFT JOIN chart_account as ca on ca.id_chart_account = jvd.id_chart_account
             WHERE ca.iscbu = 1 and jv.status <> 10 AND jv.date  <= ? AND jv.type = 1
             UNION ALL
-            SELECT curdate(),0,id_member FROM member where status=1
-        ) as CBU
-        LEFT JOIN member as m on m.id_member = CBU.id_member
-        $group_order
-        
-        ";
+            SELECT curdate(),0,id_member FROM member where status=1";
 
-
-        $data['cbus'] = DB::select($sql_query,[$dt_query_end,$dt_query_end,$dt_query_end,$dt_query_end,$dt_query_end,$dt_query_end]);
-
-        return $data;
+        return $sql;
     }
 }
