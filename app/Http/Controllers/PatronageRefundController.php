@@ -6,6 +6,7 @@ use App\MySession;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use DB;
+use Illuminate\Database\QueryException;
 
 class PatronageRefundController extends Controller
 {
@@ -81,7 +82,6 @@ class PatronageRefundController extends Controller
 
 
 
-
         $ISCRate =  ($TotalCBU > 0) ? ($ICP/($TotalCBU/$MonthCount)) : 0;
         $PRRate = ($TotalInterest > 0) ? ($PR/$TotalInterest) : 0;
 
@@ -102,6 +102,7 @@ class PatronageRefundController extends Controller
 
                     $MemberPR = ROUND($PRRate*$IntAmt_,2);
                     $MemberListsTable[]= [
+                        'id_member'=>$m->id_member,
                         'member' => $m->Name,
                         'InterestTotal'=>$IntAmt_,
                         'CBUTotal'=>$CBUAmt_,
@@ -118,19 +119,17 @@ class PatronageRefundController extends Controller
 
         $output = array();
         $output['MemberFinalData'] = $MemberFinalData;
+        $output['ISCRate']= $ISCRate;
+        $output['PRRate'] = $PRRate;
 
         return $output;
-
 
     }
     public function MemberInterests($start_month, $end_month,$year){
         $intCon = new PaidInterestSummaryController();
 
         $interestData = $intCon->parseData($start_month, $end_month,$year,1)['interest_table'];
-
         return $interestData;
-
-
     }
 
     public function MembersCBU(string $StartDate,string $EndDate,string $TransactionDateString){
@@ -193,4 +192,135 @@ class PatronageRefundController extends Controller
     function cleanNumber($formattedNumber) {
         return (float)str_replace(',', '', $formattedNumber);
     }
+
+    public function post(Request $request){
+        $year = $request->year ?? MySession::current_year();
+
+        $year = 2025;
+        $ICP = $this->cleanNumber($request->icsp ?? $this->parseInterestCapitalSharePayables($year,0));
+        $PR = $this->cleanNumber($request->prp ?? $this->parsePatronageRefundPayables($year,0));
+        $remarks = $request->remarks ?? '';
+
+        $m = $this->CompileAllocationData($year,$ICP,$PR);
+
+        $opcode = $request->opcode  ?? 0;
+        $id_patronage_capital_allocation = $request->id_patronage_capital_allocation ?? 0;
+
+        try{
+            DB::beginTransaction();
+            $allocationParent = [
+                'year'=>$year,
+                'capital_share_p'=>$ICP,
+                'patronage_refund_p'=>$PR,
+                'capital_share_rate'=>$m['ISCRate'],
+                'patronage_refund_rate'=>$m['PRRate'],
+                'remarks'=>$remarks
+            ];
+
+            $mem = $m['MemberFinalData'];
+            $allocationContent = array();
+            foreach($mem as $bgy=>$contents){
+                foreach($contents as $c){
+                    $allocationContent[] = [
+                        'id_patronage_capital_allocation'=>0,
+                        'id_member'=>$c['id_member'],
+                        'capital_share'=>$c['CBUTotal'],
+                        'ave_monthly_cbu'=>$c['AverageCBU'],
+                        'interest_capital_share'=>$c['ICS'],
+                        'loan_interest'=>$c['InterestTotal'],
+                        'patronage_refund'=>$c['PR'],
+                        'total'=>$c['TotalPayables']
+                    ];
+                }
+            }
+
+            if($opcode == 0){
+                $id_patronage_capital_allocation = DB::table('patronage_capital_allocation')
+                ->insertGetId($allocationParent);
+            }
+
+            foreach($allocationContent as $i=>$al){
+                $allocationContent[$i]['id_patronage_capital_allocation'] = $id_patronage_capital_allocation;
+            }
+
+            DB::table('patronage_capital_allocation_details')
+            ->insert($allocationContent);
+
+            DB::commit();
+
+
+        }catch(QueryException $e){
+            \Log::error($e->getMessage());
+            DB::rollback();
+
+            dd('HASDHASD');
+        }catch(\Exception $e){
+            \Log::error($e->getMessage());
+            DB::rollback();
+        }
+        // ALLOCATION PARENT
+
+
+
+        dd($allocationParent,$allocationContent);
+
+
+
+        // dd($mem_allocation);
+    }
+
+    public function allocationPage($id_patronage_capital_allocation,Request $request){
+        $data['sidebar']="sidebar-collapse";
+        $data['details'] = DB::table('patronage_capital_allocation')
+                            ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+                            ->first();
+
+        $groupings = $data['Groups'] = DB::table('patronage_capital_allocation_details as pra')
+                        ->select(DB::raw("if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name)) as groupings,if(m.id_baranggay_lgu is null,0,m.id_baranggay_lgu) as group_ref"))
+                        ->leftJoin('member as m','m.id_member','pra.id_member')
+                        ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','m.id_baranggay_lgu')
+                        ->orderBy(DB::raw("if(m.id_baranggay_lgu is null,3,bl.type) "))
+                        ->orderBy(DB::raw("concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) "))
+                        ->groupBy(DB::raw("if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name))"))
+                        ->get();
+
+        $defGroup = $groupings[0]->group_ref;
+
+        $data['AllocationTable'] = $this->FetchGroupAllocation($id_patronage_capital_allocation,$defGroup);
+
+
+        return view('patronage_refunds.allocation-form',$data);
+
+
+    }
+
+    public function FetchGroupAllocation($id_patronage_capital_allocation,$id_brgy_lgu){
+        $output = DB::table('patronage_capital_allocation_details as pc')
+                    ->select('m.id_member',DB::raw("FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as Name,
+                    pc.capital_share,pc.ave_monthly_cbu,pc.interest_capital_share,pc.loan_interest,pc.patronage_refund,pc.total,pc.w_cash,pc.w_cbu,if(pc.w_cash + pc.w_cbu =0,pc.total,pc.w_cash) as def_val"))
+                   ->leftJoin('member as m','m.id_member','pc.id_member')
+                   ->where('pc.id_patronage_capital_allocation',$id_patronage_capital_allocation)
+                   ->where(function($query) use($id_brgy_lgu){
+                        if($id_brgy_lgu > 0){
+                            $query->where('m.id_baranggay_lgu',$id_brgy_lgu);
+                        }else{
+                             $query->whereNull('m.id_baranggay_lgu');
+                        }
+                   })
+                   ->orderBy('Name')
+                   ->get();
+        return $output;
+    }
+
+
+    public function fetchMemberAllocation(Request $request){
+        $id_patronage_capital_allocation = $request->id_patronage_capital_allocation;
+        $type = $request->type;
+
+        $data['allocations'] = $this->FetchGroupAllocation($id_patronage_capital_allocation,$type);
+
+        return response($data);
+    }
+
+
 }

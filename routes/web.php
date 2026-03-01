@@ -588,6 +588,13 @@ Route::group(['middleware' => 'session'], function(){
 
 	//Patronage Refund and Interest Capital Share
 	Route::get('/patronage-refund/create','PatronageRefundController@create');
+	Route::get('/patronage-refund/post','PatronageRefundController@post');
+	Route::get('/patronage-refund/allocate/{id}','PatronageRefundController@allocationPage');
+	Route::get('/patronage-refund/fetch-member-allocations','PatronageRefundController@fetchMemberAllocation');
+
+
+
+
 
 
 	// ORA
