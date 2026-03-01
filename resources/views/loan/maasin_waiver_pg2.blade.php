@@ -198,7 +198,7 @@
 			<tr class="bbtom text-center">
 				<td>JOSEFA L. JAMELO</td>
 				<td class="nb"></td>
-				<td></td>
+				<td>{{config('variables.v_approved_by')}}</td>
 			</tr>
 			<tr class="text-center">
 				<td>Chairperson</td>
@@ -225,7 +225,7 @@
 			<tr class="bbtom text-center">
 				<td>MA. JONAH T. JACOBO</td>
 				<td class="nb"></td>
-				<td></td>
+				<td>CRESENCIO MANEJAR</td>
 			</tr>
 			<tr class="text-center">
 				<td>Vice Chairperson</td>

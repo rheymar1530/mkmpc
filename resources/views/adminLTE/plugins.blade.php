@@ -69,7 +69,7 @@
     <script src="https://cdn.jsdelivr.net/npm/tableexport-xls-bold-headers@1.0.3/tableexport-xls-bold-headers.js"></script> -->
     <script>
     function animate_element(obj,is_show){
-        
+
         if(is_show == 1){
             obj.hide();
             obj.show(300);
@@ -78,8 +78,8 @@
         }
     }
         $(function () {
-            if($(".datepicker").length > 0) {               
-                $('.datepicker').daterangepicker({               
+            if($(".datepicker").length > 0) {
+                $('.datepicker').daterangepicker({
                     singleDatePicker: true,
                     showDropdowns: true,
                     minDate: '1900-01-01',
@@ -119,7 +119,7 @@
              // Animation complete.
          });
         }
-        $(window).resize(function() { 
+        $(window).resize(function() {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
             $('.dataTables_scrollBody .head_rem').remove();
         // console.log('zoom')
@@ -205,7 +205,7 @@
 
     css.top -= parentOffset.top
     css.left -= parentOffset.left;
-    
+
     var dropdownPositionOption = this.options.get('dropdownPosition');
 
     if (dropdownPositionOption === 'above' || dropdownPositionOption === 'below') {
@@ -258,7 +258,7 @@
 </script>
 
 <script type="text/javascript">
-    
+
     function change_header_color(background_color){
         $('.nav-custom-color').css({
             background: background_color
@@ -272,7 +272,27 @@
         });
         $('.nav-custom-color').find('a').css({'color': 'white'})
     }
+	$(document).on("focus",".class_amount",function(){
+		var val = $(this).val();
+		if(val == '' || val == 'NaN'){
+			val = '0.00';
 
+			$(this).val('');
+
+			return;
+		}
+		$(this).val(decode_number_format(val));
+	})
+	$(document).on("blur",".class_amount",function(){
+		var val = $(this).val();
+		if(!$.isNumeric(val)){
+			val = 0;
+			$(this).val('');
+
+			return;
+		}
+		$(this).val(number_format(parseFloat(val)));
+	})
 </script>
 @stack('scripts')
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
