@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -138,7 +139,7 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get('/parseChargesDetails','LoanServiceController@parseCharges');
 	Route::get('/search_loan_service','LoanServiceController@search_loan_service');
 	Route::get('/loan_service/parseTermsCondition','LoanServiceController@parseTermsCondition');
-	
+
 
 
 	//Charges
@@ -159,14 +160,14 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get('/search_comakers','LoanApplicationController@search_comaker');
 	Route::get('/search_member/loan_application','LoanApplicationController@search_member');
 
-	
+
 	Route::get('/loan/calculate','LoanApplicationController@calculate');
 	Route::get('/loan/table_show','LoanApplicationController@table_loan_frame');
 	Route::get('/loan/get_loan_service_details','LoanApplicationController@get_loan_service_details');
 	Route::post('/loan/post','LoanApplicationController@post');
 	Route::post('/loan/application/cancel','LoanApplicationController@cancel_loan_application');
 
-	
+
 
 	Route::get('/loan/application/approval/{loan_token}','LoanApprovalController@view_approval');
 	Route::post('/loan/application/loan_approval','LoanApprovalController@loan_approval');
@@ -267,7 +268,7 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get('/asset/get_cdv','AssetController@get_cdv');
 	Route::get('/asset/print_sticker/{id_asset}','AssetController@print_sticker');
 	Route::get('/asset/parse/monthly_dep','AssetController@viewMonthlyDep');
-	
+
 	Route::get('/asset/parse/cdv_list','AssetController@parseCDVList');
 	Route::get('/asset/parse/account_details','AssetController@parseChartDetails');
 	Route::get('/asset/{type}/{id_asset}','AssetController@view_asset');
@@ -290,7 +291,7 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get("/asset_disposal/view/{id_asset_disposal}",'AssetDisposalController@view');
 	Route::post('/asset_disposal/post/cancel','AssetDisposalController@post_cancel');
 	Route::get('/asset_disposal/refresh_asset_table','AssetDisposalController@refresh_table');
-	
+
 	// POST
 	Route::get('/post/asset','AssetController@post');
 
@@ -317,12 +318,12 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get('/financial_statement/{types}','FinancialStatementController@index');
 	Route::get('/financial_statement/{types}/export','FinancialStatementController@export');
 
-	//INVESTMENT PRODUCT 
+	//INVESTMENT PRODUCT
 	Route::get('/investment_product','InvestmentProductController@index');
 	Route::get('/investment_product/create','InvestmentProductController@create');
 	Route::get('/investment_product/post','InvestmentProductController@post');
 	Route::get('/investment_product/view/{id_investment_product}','InvestmentProductController@view');
-	
+
 
 	// INVESTMENT
 	Route::get('/investment','InvestmentController@index');
@@ -332,7 +333,7 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get('/invest/parseTerms','InvestmentController@parseTerms');
 	Route::get('/investment/check_or','InvestmentController@check_or');
 	Route::post('/investment/post_or','InvestmentController@post_or');
-	
+
 	Route::get('/investment/edit/{id_investment}','InvestmentController@edit');
 	Route::get('/investment/view/{id_investment}','InvestmentController@view');
 
@@ -480,7 +481,7 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get('/overdue/post/push-notif','DueNotificationController@PushNotif');
 	Route::get('/overdue/test-dispatch','DueNotificationController@Dispatcher');
 	Route::post('/overdue/post-cancel','DueNotificationController@cancel_notif');
-	
+
 
 	// SCHEDULER
 	Route::get('/scheduler/test-post','SchedulerController@test_post');
@@ -518,7 +519,7 @@ Route::group(['middleware' => 'session'], function(){
 
 	Route::post('/bulk-repayment/post','BulkRepaymentController@post');
 	Route::get('/bulk-repayment/updateStatus','BulkRepaymentController@updateStatus');
-	 
+
 
 	//Loan Payment Statement
 	Route::get('/repayment-statement','RepaymentStatementController@index');
@@ -584,6 +585,14 @@ Route::group(['middleware' => 'session'], function(){
 	//Surcharge Maintenance
 	Route::get('/surcharge-maintenance','LoanAccruedController@SurchargeMaintenance');
 	Route::get('/parse-surcharge','LoanAccruedController@parseSurcharge');
+
+	//Patronage Refund and Interest Capital Share
+	Route::get('/patronage-refund/create','PatronageRefundController@create');
+
+
+	// ORA
+	Route::get('/ora','ORAController@index');
+	Route::get('/ora/export/{type}','ORAController@export');
 
 });
 
