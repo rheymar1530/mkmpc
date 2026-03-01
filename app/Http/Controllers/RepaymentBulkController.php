@@ -27,7 +27,7 @@ class RepaymentBulkController extends Controller
         return $r->print_repayment_or(3248);
     }
 
-    public function PrintRepaymentOR($id_repayment){
+   public function PrintRepaymentOR($id_repayment){
         $details = DB::table('repayment')
                    ->select('payment_for',DB::raw("DATE_FORMAT(date,'%m/%d/%Y') as date,change_payable"))
                    ->where('id_repayment',$id_repayment)
@@ -36,7 +36,7 @@ class RepaymentBulkController extends Controller
 
         if($details->payment_for == 1){
             // Individual
-            $d = DB::select("SELECT 
+            $d = DB::select("SELECT
             concat(m.last_name,', ',m.first_name) as payee,concat(ls.name,' - ',loan.id_loan) as description ,SUM(paid_principal+paid_interest+paid_fees) as amount,bl.name as barangay_lgu,m.address,
             r.change_payable
             FROM repayment as r
@@ -62,7 +62,7 @@ class RepaymentBulkController extends Controller
                 $data['paymentDetails']['address'] = (count($uniquePayee) == 1)?$d[0]->address:'';
                 $data['paymentDetails']['tin'] = '';
                 $data['paymentDetails']['total_amount'] = collect($d)->sum('amount');
-                
+
                 if(count($d) > $ItemMax){
                     //if loan payment is more than max items
                     if(count($uniquePayee) > $ItemMax){
@@ -123,11 +123,12 @@ class RepaymentBulkController extends Controller
                 }
             }
 
-            $data['Transactions'] = $trans; 
+            $data['Transactions'] = $trans;
         }else{
             //Per statement
             // concat(if(type=1,'Brgy. ','LGU '), bl.name) as payee
-            $d = DB::select("SELECT 
+
+            $d = DB::select("SELECT
             if(type=1,concat('Brgy. ',bl.name),'Municipality of Maasin') as payee,DATE_FORMAT(statement_date,'%m-%Y') as statement_ref,SUM(total_payment) as amount
             FROM (
             SELECT SUM(total_payment) as total_payment,rs.id_baranggay_lgu,rs.date as statement_date,rs.id_repayment_statement
@@ -146,20 +147,44 @@ class RepaymentBulkController extends Controller
                 'tin' => '',
                 'total_amount'=> collect($d)->sum('amount'),
                 'address'=>''
-            ]; 
+            ];
 
             $trans = array();
-    
+            $statements = array();
             foreach($d as $tr){
-                $addDesc = count($payee) > 1 ? ($tr->payee." ") : '';
-                $trans[]= [
-                    'description' => $addDesc."Statement ".$tr->statement_ref,
-                    'amount' => $tr->amount
-                ];
+                array_push($statements,$tr->statement_ref);
+                // $addDesc = count($payee) > 1 ? ($tr->payee." ") : '';
+                // $trans[]= [
+                //     'description' => $addDesc."Statement ".$tr->statement_ref,
+                //     'amount' => $tr->amount
+                // ];
             }
 
+            $data['paymentDetails']['payee'] = $data['paymentDetails']['payee']." (Statement ".implode(', ',$statements).")";
+            // $data['Transactions'] = $trans;
+
+            // TRANSACTIONS
+            $transactions = DB::select("SELECT concat(ls.name) as description ,SUM(paid_principal+paid_interest+paid_fees) as amount
+            FROM repayment as r
+            LEFT JOIN repayment_transaction as rt on rt.id_repayment = r.id_repayment AND rt.status <> 10
+            LEFT JOIN member as m on m.id_member = rt.id_member
+            LEFT JOIN repayment_loans as rl on rl.id_repayment_transaction = rt.id_repayment_transaction AND rl.status <> 10
+            LEFT JOIN loan on loan.id_loan = rl.id_loan
+            LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service
+            LEFT JOIN baranggay_lgu as bl on bl.id_baranggay_lgu = m.id_baranggay_lgu
+            WHERE r.payment_for = 2 AND r.status <> 10 AND r.id_repayment = ?
+            GROUP BY loan.id_loan_service
+            ORDER BY ls.name;",[$id_repayment]);
+
+            foreach($transactions as $transact){
+                $trans[]= [
+                    'description' => $transact->description,
+                    'amount' => $transact->amount
+                ];
+            }
             $data['Transactions'] = $trans;
         }
+
 
         $data['Transactions'][] = [
             'description' => 'CHANGE',
@@ -176,42 +201,41 @@ class RepaymentBulkController extends Controller
 
         $data['paymentDetails']['or_number'] = $addDetails->or_number;
         $data['paymentDetails']['check_no'] = $addDetails->check_no;
-
         $data['paymentDetails']['total_amount'] += $details->change_payable;
- 
+
 
 
         return view('cash_receipt.mk-or',$data);
-     
+
         dd($details);
     }
     public function index(){
         $data['credential']= CredentialModel::GetCredential(MySession::myPrivilegeId());
         if(!$data['credential']->is_view){
             // return redirect('/redirect/error')->with('message', "privilege_access_invalid");
-        }  
+        }
         // $data['repayments'] = DB::table('repayment as r')
         //                       ->select(DB::raw("r.id_repayment,DATE_FORMAT(r.date,'%m/%d/%Y') as date,r.total_amount,DATE_FORMAT(r.date_created,'%m/%d/%Y') as date_created,
-        //                     CASE 
+        //                     CASE
         //                     WHEN r.status = 0 THEN 'Posted'
         //                     WHEN r.status = 1 THEN 'Deposited'
         //                     WHEN r.status = 10 THEN 'Cancelled'
 
         //                     ELSE '' END as status_description,r.status,if(r.payment_for=1,'Individual','Statement') as payment_for"))
-                             
+
         //                       // ->where('r.id_repayment_statement',0)
         //                       ->orderBy('r.id_repayment','DESC')
 
         //                       ->get();
         $data['repayments'] = DB::table('repayment as r')
                               ->select(DB::raw("r.id_repayment,RepaymentDescription(r.payment_for,r.id_repayment) as description,DATE_FORMAT(r.date,'%m/%d/%Y') as date,r.total_amount,DATE_FORMAT(r.date_created,'%m/%d/%Y') as date_created,
-                            CASE 
+                            CASE
                             WHEN r.status = 0 THEN 'Posted'
                             WHEN r.status = 1 THEN 'Deposited'
                             WHEN r.status = 10 THEN 'Cancelled'
 
                             ELSE '' END as status_description,r.status,if(r.payment_for=1,'Individual','Statement') as payment_for,r.or_number"))
-                             
+
                               // ->where('r.id_repayment_statement',0)
                               ->orderBy('r.id_repayment','DESC')
 
@@ -220,7 +244,7 @@ class RepaymentBulkController extends Controller
 
         return view('repayment-bulk.index',$data);
 
-        dd($data);        
+        dd($data);
     }
     public function create(Request $request){
         $data['opcode'] = 0;
@@ -248,7 +272,7 @@ class RepaymentBulkController extends Controller
 
         $data['selected_branch'] = $request->br ?? $data['branches'][0]->id_baranggay_lgu;
 
-        
+
         $g = new GroupArrayController();
         $data['branches'] = $g->array_group_by($data['branches'],['type']);
 
@@ -260,7 +284,7 @@ class RepaymentBulkController extends Controller
         // $loans = $this->ActiveLoans($param);
         // // dd($loans);
 
-   
+
         // $data['loans'] = $g->array_group_by($loans,['id_member']);
 
         $data['banks'] = DB::table('tbl_bank')
@@ -303,7 +327,7 @@ class RepaymentBulkController extends Controller
             $dateCond = "if('$currentDueDate' > loan.maturity_date,'$currentDueDate',loan.maturity_date)";
 
             $data['Loans'] = DB::select("SELECT * FROM (
-            SELECT 
+            SELECT
             sd.id_loan,sd.id_member,
 
             getTotalDueTypeRepaymentX(loan.id_loan,$dateCond,?,1) as principal_balance,
@@ -327,11 +351,11 @@ class RepaymentBulkController extends Controller
             LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service) as d
             WHERE balance > 0
             ORDER BY member",[$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment,$id_repayment]);
-     
 
 
-     
-     
+
+
+
         }else{
 
             $id_repayment_statements = DB::table('repayment_transaction')
@@ -339,16 +363,16 @@ class RepaymentBulkController extends Controller
                                        ->where('id_repayment',$id_repayment)
                                        ->groupBy('id_repayment_statement')
                                        ->get()->pluck('id_repayment_statement')->toArray();
-                                       
+
             $r = new Request([
                 'id_repayment'=>$id_repayment,
                 'id_repayment_statement'=>$id_repayment_statements
             ]);
-            $statementData = $this->getStatement($r);    
-     
+            $statementData = $this->getStatement($r);
 
 
-            $data['StatementData'] = $statementData;    
+
+            $data['StatementData'] = $statementData;
         }
 
         $data['Payments'] = DB::table('repayment_payment')
@@ -397,7 +421,7 @@ class RepaymentBulkController extends Controller
         //     LEFT JOIN member as m on m.id_member  = sd.id_member
         //     LEFT JOIN loan on loan.id_loan = sd.id_loan
         //     LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service
-        //     WHERE balance > 0 
+        //     WHERE balance > 0
         //     ORDER BY member",$param);
 
         $dateCond = "if('$currentDueDate' > loan.maturity_date,'$currentDueDate',loan.maturity_date)";
@@ -422,7 +446,7 @@ class RepaymentBulkController extends Controller
             LEFT JOIN member as m on m.id_member  = sd.id_member
             LEFT JOIN loan on loan.id_loan = sd.id_loan
             LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service
-            WHERE balance > 0 
+            WHERE balance > 0
             ORDER BY member",$param);
 
         if(count($loans) > 0){
@@ -436,11 +460,11 @@ class RepaymentBulkController extends Controller
 
             return response($data);
         }
-        
+
 
         return response($data);
 
-       
+
     }
 
     public function ParseStatements(Request $request){
@@ -466,7 +490,7 @@ class RepaymentBulkController extends Controller
                 GROUP BY rs.id_repayment_statement
                 UNION ALL
                 SELECT rs.id_repayment_statement,SUM(rsd.loan_due)-getSatementPayment(rs.id_repayment_statement,$id_repayment) as due ,concat(if(bl.type=1,'Brgy. ','LGU -'),bl.name) as brgy_lgu,DATE_FORMAT(rs.date,'%m-%Y') as statement_ref FROM (
-                SELECT id_repayment_statement 
+                SELECT id_repayment_statement
                 FROM repayment_transaction as rt
                 WHERE rt.id_repayment = :id_repayment
                 GROUP BY rt.id_repayment_statement) as k
@@ -496,7 +520,7 @@ class RepaymentBulkController extends Controller
             $data['RESPONSE_CODE'] = "ERROR";
             $data['message'] = "Please select at least one statement";
             return response($data);
-        } 
+        }
 
         $statements = $this->StatementLoans($id_repayment,$id_repayment_statement);
 
@@ -519,7 +543,7 @@ class RepaymentBulkController extends Controller
                                      ->whereIn('rs.id_repayment_statement',$id_repayment_statement)
                                      ->groupBy('rs.id_repayment_statement')
                                      ->get();
-                                     
+
         $data['selected_brgy_lgu'] = $data['statement_details'][0]->id_baranggay_lgu ?? 0;
         $g = new GroupArrayController();
         $data['STATEMENTS'] = $g->array_group_by($statements,['id_repayment_statement','id_member']);
@@ -528,7 +552,7 @@ class RepaymentBulkController extends Controller
         $data['statement_details'] = $g->array_group_by($data['statement_details'],['id_repayment_statement']);
 
         $data['RESPONSE_CODE'] = "SUCCESS";
-       
+
 
 
         return $data;
@@ -557,7 +581,7 @@ class RepaymentBulkController extends Controller
         ->leftJoin('loan','loan.id_loan','rsd.id_loan')
         ->leftJoin('loan_service as ls','ls.id_loan_service','loan.id_loan_service')
         ->leftJoin('repayment_transaction as rt','rt.id_repayment_transaction','rsd.id_repayment_transaction')
-        ->whereIn('rsd.id_repayment_statement',$id_repayment_statements);     
+        ->whereIn('rsd.id_repayment_statement',$id_repayment_statements);
         $statement = DB::table(DB::raw("({$subquery->toSql()}) as statement"))
                      ->mergeBindings($subquery)
                      ->where('statement.balance','>',0)
@@ -588,9 +612,9 @@ class RepaymentBulkController extends Controller
                 if(!in_array($statement[$i]->id_repayment_statement,$statementRepayment)){
                     $statement[$i]->current_due = $statement[$i]->loan_due_;
                 }
-                
+
             }
-                 
+
         }else{
             for($i=0;$i<count($statement);$i++){
                 $statement[$i]->current_due = ($statement[$i]->loan_due_ >= 0)? $statement[$i]->loan_due_:0;
@@ -619,7 +643,7 @@ class RepaymentBulkController extends Controller
                             LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service
                             WHERE balance > 0
                             ORDER BY member",$param);
-        
+
         return $loans;
     }
 
@@ -661,7 +685,7 @@ class RepaymentBulkController extends Controller
         $LoanSurchargeDiscount = array();
         $SurchargeHolder = array();
 
-      
+
         if(count($payments) == 0){
             $data['RESPONSE_CODE'] = "ERROR";
             $data['message'] = "Select loan payment";
@@ -678,7 +702,7 @@ class RepaymentBulkController extends Controller
 
         $CompiledPaymentType = $this->compilePayments($RepaymentDetails,$PaymentDetails);
 
-    
+
         //validate inputs
         $RepaymentDetailsValidator = array(
             "date" => ['required'=>true,'number'=>false],
@@ -726,16 +750,16 @@ class RepaymentBulkController extends Controller
             }
             if(count($invalidTemp) > 0){
                 $InvalidPayment[$i] = $invalidTemp;
-  
+
             }
         }
 
        if(count($InvalidPayment) > 0){
             $data['RESPONSE_CODE'] = "ERROR";
             $data['message'] = "Invalid Payment Value";
-            $data['errorPayment'] = $InvalidPayment;   
+            $data['errorPayment'] = $InvalidPayment;
 
-            return response($data);     
+            return response($data);
        }
 
 
@@ -762,7 +786,7 @@ class RepaymentBulkController extends Controller
 
 
 
-    
+
             foreach($statementLoan as $sl){
                 $LoanData[$sl->id_repayment_statement][$sl->id_loan]=[
                     'id_repayment_statement'=>$sl->id_repayment_statement,
@@ -778,7 +802,7 @@ class RepaymentBulkController extends Controller
                 }
                 $LoanBalanceHolder[$sl->id_loan]= floatval($sl->balance);
                 $SurchargeHolder[$sl->id_loan] = floatval($sl->surcharge);
-                
+
                 array_push($LoanStatementHolder[$sl->id_loan],$sl->id_repayment_statement);
             }
         }else{
@@ -805,7 +829,7 @@ class RepaymentBulkController extends Controller
                 $LoanBalanceHolder[$m->id_loan]= floatval($m->balance);
                 $SurchargeHolder[$m->id_loan] = floatval($m->surchargeBalance);
 
-                // array_push($LoanStatementHolder[$m->id_loan],$m->id_repayment_statement);  
+                // array_push($LoanStatementHolder[$m->id_loan],$m->id_repayment_statement);
             }
         }
 
@@ -841,7 +865,7 @@ class RepaymentBulkController extends Controller
             if(ROUND($amountPaid,2) == ROUND($discountedBalance,2)){
                 $LoanSurchargeDiscount[$idLoan] = $discount;
             }
-    
+
             if($amountPaid > $balance){
                 array_push($invalidLoans,$idLoan);
             }
@@ -893,7 +917,7 @@ class RepaymentBulkController extends Controller
                 $app_payment = $RepaymentController->PopulatePaymentAuto($TokenHolder[$idLoan],$amount,$idRepaymentTransactionsPlucked,$currentDueDate);
             }
 
-            
+
             $app_payment['id_member'] = $id_member;
 
             if(count($statements) > 1){
@@ -902,7 +926,7 @@ class RepaymentBulkController extends Controller
                 foreach($statements as $s){
                     $StatementPayment = $LoanPayment[$s][$idLoan];
                     $PaymentPerStatement[$s] = $StatementPayment;
-                   
+
                 }
                 $SeparatedPayment = $this->ApplyStatementPayment($PaymentPerStatement,$app_payment['payments']);
                 // dd($SeparatedPayment);
@@ -928,7 +952,7 @@ class RepaymentBulkController extends Controller
             foreach($members as $id_member=>$m){
                 $id_repayment_transaction = DB::table('repayment_transaction')->where('id_member',$id_member)->where('id_repayment',$id_repayment)->where('id_repayment_statement',$idStatement)->max('id_repayment_transaction') ?? 0;
 
-   
+
 
                 for($i=0;$i<count($CompiledPerStatement[$idStatement][$id_member]);$i++){
                     $CompiledPerStatement[$idStatement][$id_member][$i]['id_repayment_transaction'] = $id_repayment_transaction;
@@ -957,10 +981,10 @@ class RepaymentBulkController extends Controller
         }
 
         $Paymode = $request->RepaymentDetails['paymode'];
-        
+
         $AppliedPayment = collect($CompiledPaymentMethod)->sum('amount');
 
-        
+
         if(ROUND($AppliedPayment,2) < ROUND($TotalPayment,2)){
             $data['RESPONSE_CODE'] = "ERROR";
             $data['message'] = "Insufficient Payment amount";
@@ -968,7 +992,7 @@ class RepaymentBulkController extends Controller
         }elseif(ROUND($AppliedPayment,2) > ROUND($TotalPayment,2) && $Paymode == 1){
             $data['RESPONSE_CODE'] = "ERROR";
             $data['message'] = "Invalid Payment Amount";
-            return response($data);            
+            return response($data);
         }
 
 
@@ -994,7 +1018,7 @@ class RepaymentBulkController extends Controller
             'transaction_type' => $RepaymentDetails['paymode'],
             'transaction_date'=>$RepaymentPostOBJ['date'],
             'email_sent'=>DB::raw("if(email_sent=0,0,1)")
-        ];  
+        ];
 
 
         // $id_repayment = 18;
@@ -1007,7 +1031,7 @@ class RepaymentBulkController extends Controller
                 DB::table('repayment')
                 ->insert([$RepaymentPostOBJ]);
 
-                $id_repayment = DB::table('repayment')->max('id_repayment');            
+                $id_repayment = DB::table('repayment')->max('id_repayment');
             }else{
                 $this->updateRepaymentStatementStatus($id_repayment,0);
                 DB::table('repayment')
@@ -1021,7 +1045,7 @@ class RepaymentBulkController extends Controller
                 $postData[$i]['repayment_transaction'] = $postData[$i]['repayment_transaction']+$additionalFields;
 
 
-                $postData[$i]['repayment_transaction']['or_no'] = $RepaymentPostOBJ['or_number'];  
+                $postData[$i]['repayment_transaction']['or_no'] = $RepaymentPostOBJ['or_number'];
                 // $postData[$i]['repayment_transaction']['id_bank'] = $RepaymentPostOBJ['id_bank'];
 
 
@@ -1133,7 +1157,7 @@ class RepaymentBulkController extends Controller
 
 
 
-                    // //push repayment loan surcharges 
+                    // //push repayment loan surcharges
                     // foreach($post['repayment_loan_surcharges'] as $c=>$rp){
                     //     $postData[$i]['repayment_loan_surcharges'][$c]['id_repayment_transaction'] = $id_repayment_transaction;
                     // }
@@ -1171,7 +1195,7 @@ class RepaymentBulkController extends Controller
                     }
                     DB::table('repayment_transaction')
                     ->where('id_repayment_transaction',$id_repayment_transaction)
-                    ->update(['id_cash_receipt_voucher'=>$crv['id_cash_receipt_voucher']]);               
+                    ->update(['id_cash_receipt_voucher'=>$crv['id_cash_receipt_voucher']]);
                 }else{
                     $this->CRV($id_repayment_transaction,10);
                 }
@@ -1265,7 +1289,7 @@ class RepaymentBulkController extends Controller
         }
 
 
-        dd($postData);  
+        dd($postData);
 
 
 
@@ -1284,7 +1308,7 @@ class RepaymentBulkController extends Controller
         LEFT JOIN repayment_statement_details as rsd on rsd.id_repayment_statement = r.id_repayment_statement
         GROUP BY rsd.id_repayment_statement) as k
         LEFT JOIN repayment_statement as rs on rs.id_repayment_statement = k.id_repayment_statement
-        SET rs.status = $ConditionalString;",[$id_repayment]);        
+        SET rs.status = $ConditionalString;",[$id_repayment]);
     }
 
     public function compilePayments($RepaymentDetails,$Payments){
@@ -1350,17 +1374,17 @@ class RepaymentBulkController extends Controller
 
                         $currentAmt -= ROUND($paid_interest,2);
 
-              
+
 
                         $paymentLoan[$i]['paid_principal'] -= $paid_principal;
                         $paymentLoan[$i]['paid_interest'] -= $paid_interest;
 
                         $cur['paid_principal'] = $paid_principal;
-                        $cur['paid_interest'] = $paid_interest;  
+                        $cur['paid_interest'] = $paid_interest;
 
-                        array_push($output[$statementID]['loan'],$cur);                   
+                        array_push($output[$statementID]['loan'],$cur);
 
-                    }                    
+                    }
                 }
 
             }
@@ -1376,18 +1400,18 @@ class RepaymentBulkController extends Controller
     public function CompileRepaymentTransaction($date,$payments,$idStatement){
 
 
-    
+
         $PostOBJ = array();
         foreach($payments as $pay){
             $tempPostOBJ=array();
 
 
-    
+
             $tempPostOBJ['id_repayment_transaction'] = $pay[0]['id_repayment_transaction'];
             $tempPostOBJ['repayment_loans'] = array();
 
 
-            $fully_paid_loan = array(); 
+            $fully_paid_loan = array();
             $rebatesObj = array();
             $total_rebates = 0;
             $total_penalty=0;
@@ -1416,8 +1440,8 @@ class RepaymentBulkController extends Controller
             $tempPostOBJ['totalPayment'] =$tempPostOBJ['repayment_transaction']['total_payment'];
 
             array_push($PostOBJ,$tempPostOBJ);
-        } 
-       
+        }
+
         return $PostOBJ;
     }
     public function CRV($id_repayment_transaction,$status){
@@ -1460,12 +1484,12 @@ class RepaymentBulkController extends Controller
                 $dt = WebHelper::ConvertDatePeriod($date);
                 $dt_query = env('REPAYMENT_INTEREST_FULL_CONTRACT')?"if('$dt' > loan.maturity_date,'$dt',loan.maturity_date)":"'$dt'";
 
-      
+
                 $balance_as_of = DB::table('loan')
                                  ->select(DB::raw("getLoanBalanceAsOf(id_loan,$dt_query) as bal"))
                                  ->where('loan_token',$loan_tokens[$i])
                                  ->first();
-                                 
+
                 if(isset($balance_as_of) && $balance_as_of->bal <= 0){
                     //close the loan if the principal and current interest and fees are paid
                     DB::table('loan')
@@ -1485,7 +1509,7 @@ class RepaymentBulkController extends Controller
                     ]);
                 }
             }
-        }        
+        }
     }
 
     public function generateRandomString($length = 8) {
@@ -1536,19 +1560,19 @@ class RepaymentBulkController extends Controller
         $pdf->setOption('margin-left', '0.42in');
         $pdf->setOption('header-left', 'Page [page] of [toPage]');
         // $pdf->setOption('header-right', 'No.: '.$data['details']->month_year.'-'.$data['details']->id_repayment_statement);
-    
+
         $pdf->setOption('header-font-size', 8);
         $pdf->setOption('header-font-name', 'Calibri');
 
         return $pdf->stream("{$data['file_name']}.pdf",array('Attachment'=>1));
-      
+
 
         dd($data);
     }
     public function viewData($id_repayment){
         $data['details'] = DB::table('repayment as r')
                             ->select(DB::raw("r.id_repayment,DATE_FORMAT(r.date,'%m/%d/%Y') as date,if(r.payment_for=1,'Individual','Statement') as payment_for,r.or_number,if(r.id_paymode=1,'Cash','Check') as paymode,r.status,r.total_amount,r.payment_for as payment_for_code,
-                                CASE 
+                                CASE
                                 WHEN r.status = 0 THEN 'Posted'
                                 WHEN r.status = 1 THEN 'Deposited'
                                 WHEN r.status = 10 THEN 'Cancelled'
@@ -1574,7 +1598,7 @@ class RepaymentBulkController extends Controller
 
             $data['statamentData'] = $g->array_group_by($statements,['statement','id_member']);
 
-          
+
 
         }else{
             $loans = DB::select("SELECT rt.id_member,
@@ -1630,7 +1654,7 @@ class RepaymentBulkController extends Controller
             $r = new Request(['id_repayment_transaction'=>$id_repayment_transaction,'cancel_repayment'=>$cancel_reason,'no_entry'=>false]);
 
             $repayment->cancel_repayment($r);
-            
+
         }
 
         DB::table('repayment')->where('id_repayment',$id_repayment)->update(['status'=>10,'status_user'=>MySession::myId(),'status_date'=>now(),'reason'=>$cancel_reason]);
@@ -1641,5 +1665,5 @@ class RepaymentBulkController extends Controller
 
     }
 
-        
+
 }
