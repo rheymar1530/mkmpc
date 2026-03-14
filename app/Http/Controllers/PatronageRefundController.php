@@ -63,6 +63,7 @@ class PatronageRefundController extends Controller
 
 
         $interestData = $this->MemberInterests((int) date("m", strtotime($StartDate)),(int) date("m", strtotime($EndDate)),$year);
+
         $TotalInterest = collect($interestData)->sum('Total');
         $interestData = $g->array_group_by($interestData,['id_member']);
 
@@ -77,45 +78,139 @@ class PatronageRefundController extends Controller
                         ->get();
         $MemberLists = $g->array_group_by($MemberLists,['dataGroupings']);
 
+        // $ISCRate =  ($TotalCBU > 0) ? ($ICP/($TotalCBU/$MonthCount)) : 0;
+        // $PRRate = ($TotalInterest > 0) ? ($PR/$TotalInterest) : 0;
 
 
 
+        // $MemberFinalData = array();
+        // foreach($MemberLists as $group=>$members){
+        //     $MemberListsTable = array();
+        //     foreach($members as $m){
+        //         $CBUAmt_ = isset($cbuData[$m->id_member]) ? $cbuData[$m->id_member][0]->Total : 0;
+        //         $IntAmt_ = isset($interestData[$m->id_member]) ? $interestData[$m->id_member][0]->Total : 0;
+        //         $TotalAmt_ = $CBUAmt_ + $IntAmt_;
 
+        //         if($TotalAmt_ > 0) {
 
-        $ISCRate =  ($TotalCBU > 0) ? ($ICP/($TotalCBU/$MonthCount)) : 0;
-        $PRRate = ($TotalInterest > 0) ? ($PR/$TotalInterest) : 0;
+        //             $AverageCBU = $CBUAmt_/$MonthCount;
+        //             $MemberICS = ROUND($AverageCBU*$ISCRate,2);
 
+        //             $MemberPR = ROUND($PRRate*$IntAmt_,2);
+        //             $MemberListsTable[]= [
+        //                 'id_member'=>$m->id_member,
+        //                 'member' => $m->Name,
+        //                 'InterestTotal'=>$IntAmt_,
+        //                 'CBUTotal'=>$CBUAmt_,
+        //                 'Total'=>$TotalAmt_,
+        //                 'AverageCBU'=>$AverageCBU,
+        //                 'ICS'=>$MemberICS,
+        //                 'PR'=>$MemberPR,
+        //                 'TotalPayables'=>$MemberICS+$MemberPR
+        //             ];
+        //         }
+        //     }
+        //     $MemberFinalData[$group] = $MemberListsTable;
+        // }
 
+        $ISCRate = ($TotalCBU > 0) ? ($ICP / ($TotalCBU / $MonthCount)) : 0;
+        $PRRate  = ($TotalInterest > 0) ? ($PR / $TotalInterest) : 0;
 
-        $MemberFinalData = array();
-        foreach($MemberLists as $group=>$members){
-            $MemberListsTable = array();
-            foreach($members as $m){
+        $AllMembers = [];
+        $MemberFinalData = [];
+
+        /*
+        |--------------------------------------------------------------------------
+        | STEP 1 — COMPUTE RAW VALUES FOR ALL MEMBERS
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($MemberLists as $group => $members) {
+
+            foreach ($members as $m) {
+
                 $CBUAmt_ = isset($cbuData[$m->id_member]) ? $cbuData[$m->id_member][0]->Total : 0;
                 $IntAmt_ = isset($interestData[$m->id_member]) ? $interestData[$m->id_member][0]->Total : 0;
                 $TotalAmt_ = $CBUAmt_ + $IntAmt_;
 
-                if($TotalAmt_ > 0) {
+                if ($TotalAmt_ > 0) {
 
-                    $AverageCBU = $CBUAmt_/$MonthCount;
-                    $MemberICS = ROUND($AverageCBU*$ISCRate,2);
+                    $AverageCBU = $CBUAmt_ / $MonthCount;
 
-                    $MemberPR = ROUND($PRRate*$IntAmt_,2);
-                    $MemberListsTable[]= [
-                        'id_member'=>$m->id_member,
+                    $ICS_raw = $AverageCBU * $ISCRate;
+                    $PR_raw  = $PRRate * $IntAmt_;
+
+                    $ICS = round($ICS_raw, 2);
+                    $PR  = round($PR_raw, 2);
+
+                    $AllMembers[] = [
+                        'group' => $group,
+                        'id_member' => $m->id_member,
                         'member' => $m->Name,
-                        'InterestTotal'=>$IntAmt_,
-                        'CBUTotal'=>$CBUAmt_,
-                        'Total'=>$TotalAmt_,
-                        'AverageCBU'=>$AverageCBU,
-                        'ICS'=>$MemberICS,
-                        'PR'=>$MemberPR,
-                        'TotalPayables'=>$MemberICS+$MemberPR
+                        'InterestTotal' => $IntAmt_,
+                        'CBUTotal' => $CBUAmt_,
+                        'Total' => $TotalAmt_,
+                        'AverageCBU' => $AverageCBU,
+                        'ICS_raw' => $ICS_raw,
+                        'PR_raw' => $PR_raw,
+                        'ICS' => $ICS,
+                        'PR' => $PR
                     ];
                 }
             }
-            $MemberFinalData[$group] = $MemberListsTable;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | STEP 2 — CHECK GLOBAL ROUNDING DIFFERENCE
+        |--------------------------------------------------------------------------
+        */
+
+        $totalICS = 0;
+        $totalPR  = 0;
+
+        foreach ($AllMembers as $m) {
+            $totalICS += $m['ICS'];
+            $totalPR  += $m['PR'];
+        }
+
+        $ICSdiff = round($ICP - $totalICS, 2);
+        $PRdiff  = round($PR - $totalPR, 2);
+
+        /*
+        |--------------------------------------------------------------------------
+        | STEP 3 — APPLY ROUNDING FIX
+        |--------------------------------------------------------------------------
+        */
+
+        if (!empty($AllMembers)) {
+
+            $lastIndex = count($AllMembers) - 1;
+
+            if ($ICSdiff != 0) {
+                $AllMembers[$lastIndex]['ICS'] += $ICSdiff;
+            }
+
+            if ($PRdiff != 0) {
+                $AllMembers[$lastIndex]['PR'] += $PRdiff;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | STEP 4 — REBUILD GROUPED DATA
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($AllMembers as $m) {
+
+            $group = $m['group'];
+
+            $m['TotalPayables'] = $m['ICS'] + $m['PR'];
+
+            $MemberFinalData[$group][] = $m;
+        }
+
 
         $output = array();
         $output['MemberFinalData'] = $MemberFinalData;
