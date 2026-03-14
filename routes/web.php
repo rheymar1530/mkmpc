@@ -591,6 +591,8 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get('/patronage-refund/post','PatronageRefundController@post');
 	Route::get('/patronage-refund/allocate/{id}','PatronageRefundController@allocationPage');
 	Route::get('/patronage-refund/fetch-member-allocations','PatronageRefundController@fetchMemberAllocation');
+	Route::post('/patronage-refund/post-allocation','PatronageRefundController@postAllocation');
+
 
 
 

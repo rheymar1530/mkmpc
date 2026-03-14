@@ -101,7 +101,7 @@
                 </table>
             </div>
             <div class="card-footer">
-                <button class="btn btn-md float-right bg-gradient-success">Save</button>
+                <button class="btn btn-md float-right bg-gradient-success" id="btn-post">Save</button>
             </div>
          </div>
     </div>
@@ -170,7 +170,7 @@
             total_def_val += parseFloat(item.def_val) || 0;
             total_w_cbu += parseFloat(item.w_cbu) || 0;
 
-            out += `<tr class="row-member" data-id="${item.id_member}">`;
+            out += `<tr class="row-member" data-id-member="${item.id_member}">`;
             out += `<td class="text-center">${i+1}</td>`;
             out += `<td>${item.Name}</td>`;
             out += `<td class="text-right">${number_format(item.capital_share,2)}</td>`;
@@ -179,8 +179,8 @@
             out += `<td class="text-right">${number_format(item.loan_interest,2)}</td>`;
             out += `<td class="text-right">${number_format(item.patronage_refund,2)}</td>`;
             out += `<td class="text-right">${number_format(item.total,2)}</td>`;
-            out += `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cash ff" value="${number_format(item.def_val,2)}"></td>`;
-            out += `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cbu ff" value="${number_format(item.w_cbu,2)}"></td>`;
+            out += `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cash ff" name="cash" value="${number_format(item.def_val,2)}"></td>`;
+            out += `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cbu ff" name="cbu" value="${number_format(item.w_cbu,2)}"></td>`;
             out += `</tr>`;
         });
         $('#body-allocation').html(out);
@@ -225,8 +225,81 @@
     }
 
     $(document).on('blur', '.ff', function () {
-
         recomputeTotals();
+    });
+
+    $('#btn-post').on('click', () => {
+
+        const allocation = $('.row-member').map(function () {
+            const temp = {};
+            temp['id_member'] = $(this).attr('data-id-member');
+            $(this).find('.ff').each(function () {
+                temp[this.name] = decode_number_format(this.value);
+            });
+            return temp;
+        }).get();
+
+        const ajaxParam = {
+            'allocations' : allocation,
+            'id_patronage_capital_allocation' : ID_PATRONAGE_CAPITAL_ALLOCATION
+        };
+
+
+        $.ajax({
+            type       :    'POST',
+            url        :    '/patronage-refund/post-allocation',
+            data       :    ajaxParam,
+            beforeSend  :   function(){
+                            $('.table-danger').removeClass('table-danger');
+                            show_loader();
+            },
+            success    :    function(response){
+                            console.log({response});
+                            hide_loader();
+                            if(response.RESPONSE_CODE == "SUCCESS"){
+                                Swal.fire({
+                                    title: response.message,
+                                    text: '',
+                                    icon: 'success',
+                                    showCancelButton : false,
+                                    showConfirmButton : false,
+                                    timer : 2000
+                                }).then(()=>{
+
+                                });
+                            }else if(response.RESPONSE_CODE == "ERROR"){
+                                const InvalidRows = response.invalidRows;
+                                Swal.fire({
+                                    title: response.message,
+                                    text: '',
+                                    icon: 'warning',
+                                    showCancelButton : false,
+                                    showConfirmButton : false,
+                                    timer : 2500
+                                }).then(()=>{
+                                    $.each(InvalidRows,function(i,id){
+                                        console.log({id})
+                                        $(`tr.row-member[data-id-member="${id}"]`).addClass('table-danger');
+                                    })
+                                });
+                            }
+            },error: function(xhr, status, error) {
+				hide_loader()
+				var errorMessage = xhr.status + ': ' + xhr.statusText;
+				Swal.fire({
+					title: "Error-" + errorMessage,
+					text: '',
+					icon: 'warning',
+					confirmButtonText: 'OK',
+					confirmButtonColor: "#DD6B55"
+				});
+			}
+        });
+
+        console.log({ajaxParam});
+
+
+
     });
 </script>
 @endpush

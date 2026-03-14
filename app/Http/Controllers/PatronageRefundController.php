@@ -269,6 +269,77 @@ class PatronageRefundController extends Controller
         // dd($mem_allocation);
     }
 
+    public function postAllocation(Request $request){
+        if($request->ajax()){
+            $allocations = $request->allocations ?? [];
+            $id_patronage_capital_allocation = $request->id_patronage_capital_allocation;
+
+            $idMembers = collect($allocations)->pluck('id_member')->toArray();
+
+            try{
+                // FETCH AMOUNTS FOR VALIDATION
+                $allocationsValidation = DB::table('patronage_capital_allocation_details as pca')
+                                        ->select('id_member','interest_capital_share','patronage_refund','total')
+                                        ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+                                        ->whereIn('id_member',$idMembers)
+                                        ->get()->keyBy('id_member');
+
+                $invalidAmount = [];
+
+                $allocationOBJ = [];
+                foreach($allocations as $al){
+                    $cash = ($al['cash'] == "") ? 0 : $al['cash'];
+
+                    $cbu = ($al['cbu'] == "") ? 0 : $al['cbu'];
+                    $totalAlloc = (float)$cash + (float)$cbu;
+                    $validationAmount = (float)$allocationsValidation[$al['id_member']]->total;
+
+                    if($totalAlloc !== $validationAmount){
+                        $invalidAmount[]=$al['id_member'];
+                    }
+
+                    $allocationOBJ[$al['id_member']]= [
+                        'w_cash'=>$cash,
+                        'w_cbu'=>$cbu
+                    ];
+                }
+
+                if(count($invalidAmount) > 0){
+                    $data['RESPONSE_CODE'] = "ERROR";
+                    $data['message'] = "Invalid Amount";
+                    $data['invalidRows'] = $invalidAmount;
+
+                    return response($data);
+                }
+
+                foreach($allocationOBJ as $id_member=>$al){
+                    DB::table('patronage_capital_allocation_details')
+                    ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+                    ->where('id_member',$id_member)
+                    ->update($al);
+                }
+
+                DB::commit();
+
+                return response(['RESPONSE_CODE'=>"SUCCESS","message"=>"Allocation Successfully Posted"]);
+
+
+
+            }catch(QueryException $e){
+                \Log::error($e->getMessage());
+                DB::rollback();
+
+                dd('HASDHASD');
+            }catch(\Exception $e){
+                \Log::error($e->getMessage());
+                DB::rollback();
+            }
+
+
+
+        }
+    }
+
     public function allocationPage($id_patronage_capital_allocation,Request $request){
         $data['sidebar']="sidebar-collapse";
         $data['details'] = DB::table('patronage_capital_allocation')
