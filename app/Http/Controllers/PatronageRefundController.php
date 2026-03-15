@@ -10,6 +10,12 @@ use Illuminate\Database\QueryException;
 
 class PatronageRefundController extends Controller
 {
+
+    private $DefAllocation = [
+        ["description" => "Cash" ,"key" =>"w_cash"],
+        ["description" => "CBU" ,"key" =>"w_cbu"]
+    ];
+
     public function create(Request $request){
         $data['sidebar']="sidebar-collapse";
 
@@ -17,6 +23,7 @@ class PatronageRefundController extends Controller
         $data['icsp'] = $ICP = $this->cleanNumber($request->icsp ?? $this->parseInterestCapitalSharePayables($year,0));
         $data['prp'] = $PR = $this->cleanNumber($request->prp ?? $this->parsePatronageRefundPayables($year,0));
 
+        $data['DefAllocation'] = $this->DefAllocation;
 
 
         $mem_allocation = $this->CompileAllocationData($year,$ICP,$PR);
@@ -116,6 +123,9 @@ class PatronageRefundController extends Controller
         $ISCRate = ($TotalCBU > 0) ? ($ICP / ($TotalCBU / $MonthCount)) : 0;
         $PRRate  = ($TotalInterest > 0) ? ($PR / $TotalInterest) : 0;
 
+        $ICP_total = $ICP;
+        $PR_total  = $PR;
+
         $AllMembers = [];
         $MemberFinalData = [];
 
@@ -140,8 +150,8 @@ class PatronageRefundController extends Controller
                     $ICS_raw = $AverageCBU * $ISCRate;
                     $PR_raw  = $PRRate * $IntAmt_;
 
-                    $ICS = round($ICS_raw, 2);
-                    $PR  = round($PR_raw, 2);
+                    $ICS_member = round($ICS_raw, 2);
+                    $PR_member  = round($PR_raw, 2);
 
                     $AllMembers[] = [
                         'group' => $group,
@@ -153,8 +163,8 @@ class PatronageRefundController extends Controller
                         'AverageCBU' => $AverageCBU,
                         'ICS_raw' => $ICS_raw,
                         'PR_raw' => $PR_raw,
-                        'ICS' => $ICS,
-                        'PR' => $PR
+                        'ICS' => $ICS_member,
+                        'PR' => $PR_member
                     ];
                 }
             }
@@ -162,7 +172,7 @@ class PatronageRefundController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | STEP 2 — CHECK GLOBAL ROUNDING DIFFERENCE
+        | STEP 2 — COMPUTE TOTALS
         |--------------------------------------------------------------------------
         */
 
@@ -174,31 +184,64 @@ class PatronageRefundController extends Controller
             $totalPR  += $m['PR'];
         }
 
-        $ICSdiff = round($ICP - $totalICS, 2);
-        $PRdiff  = round($PR - $totalPR, 2);
-
         /*
         |--------------------------------------------------------------------------
-        | STEP 3 — APPLY ROUNDING FIX
+        | STEP 3 — CALCULATE ROUNDING DIFFERENCE
         |--------------------------------------------------------------------------
         */
 
-        if (!empty($AllMembers)) {
+        $ICSdiffCents = round(($ICP_total - $totalICS) * 100);
+        $PRdiffCents  = round(($PR_total - $totalPR) * 100);
 
-            $lastIndex = count($AllMembers) - 1;
+        $memberCount = count($AllMembers);
 
-            if ($ICSdiff != 0) {
-                $AllMembers[$lastIndex]['ICS'] += $ICSdiff;
+        /*
+        |--------------------------------------------------------------------------
+        | STEP 4 — DISTRIBUTE ICS ROUNDING
+        |--------------------------------------------------------------------------
+        */
+
+        $i = 0;
+
+        while ($ICSdiffCents != 0 && $memberCount > 0) {
+
+            if ($ICSdiffCents > 0) {
+                $AllMembers[$i]['ICS'] += 0.01;
+                $ICSdiffCents--;
+            } else {
+                $AllMembers[$i]['ICS'] -= 0.01;
+                $ICSdiffCents++;
             }
 
-            if ($PRdiff != 0) {
-                $AllMembers[$lastIndex]['PR'] += $PRdiff;
-            }
+            $i++;
+            if ($i >= $memberCount) $i = 0;
         }
 
         /*
         |--------------------------------------------------------------------------
-        | STEP 4 — REBUILD GROUPED DATA
+        | STEP 5 — DISTRIBUTE PR ROUNDING
+        |--------------------------------------------------------------------------
+        */
+
+        $i = 0;
+
+        while ($PRdiffCents != 0 && $memberCount > 0) {
+
+            if ($PRdiffCents > 0) {
+                $AllMembers[$i]['PR'] += 0.01;
+                $PRdiffCents--;
+            } else {
+                $AllMembers[$i]['PR'] -= 0.01;
+                $PRdiffCents++;
+            }
+
+            $i++;
+            if ($i >= $memberCount) $i = 0;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | STEP 6 — REBUILD GROUP STRUCTURE
         |--------------------------------------------------------------------------
         */
 
@@ -208,9 +251,18 @@ class PatronageRefundController extends Controller
 
             $m['TotalPayables'] = $m['ICS'] + $m['PR'];
 
-            $MemberFinalData[$group][] = $m;
+            $MemberFinalData[$group][] = [
+                'id_member' => $m['id_member'],
+                'member' => $m['member'],
+                'InterestTotal' => $m['InterestTotal'],
+                'CBUTotal' => $m['CBUTotal'],
+                'Total' => $m['Total'],
+                'AverageCBU' => $m['AverageCBU'],
+                'ICS' => $m['ICS'],
+                'PR' => $m['PR'],
+                'TotalPayables' => $m['TotalPayables']
+            ];
         }
-
 
         $output = array();
         $output['MemberFinalData'] = $MemberFinalData;
@@ -289,12 +341,19 @@ class PatronageRefundController extends Controller
     }
 
     public function post(Request $request){
+
+
         $year = $request->year ?? MySession::current_year();
 
         $year = 2025;
         $ICP = $this->cleanNumber($request->icsp ?? $this->parseInterestCapitalSharePayables($year,0));
         $PR = $this->cleanNumber($request->prp ?? $this->parsePatronageRefundPayables($year,0));
         $remarks = $request->remarks ?? '';
+        $default_allocation = $request->default_allocation ?? 0;
+        // dd($request->all())
+        $def_key = $this->DefAllocation[$default_allocation]['key'];
+
+
 
         $m = $this->CompileAllocationData($year,$ICP,$PR);
 
@@ -314,6 +373,7 @@ class PatronageRefundController extends Controller
 
             $mem = $m['MemberFinalData'];
             $allocationContent = array();
+
             foreach($mem as $bgy=>$contents){
                 foreach($contents as $c){
                     $allocationContent[] = [
@@ -324,7 +384,8 @@ class PatronageRefundController extends Controller
                         'interest_capital_share'=>$c['ICS'],
                         'loan_interest'=>$c['InterestTotal'],
                         'patronage_refund'=>$c['PR'],
-                        'total'=>$c['TotalPayables']
+                        'total'=>$c['TotalPayables'],
+                         $def_key=>$c['TotalPayables']
                     ];
                 }
             }
@@ -342,6 +403,8 @@ class PatronageRefundController extends Controller
             ->insert($allocationContent);
 
             DB::commit();
+
+            return response(['RESPONSE_CODE'=>'SUCCESS','id_patronage_capital_allocation' => $id_patronage_capital_allocation, 'message'=>"Allocation successfully save!"]);
 
 
         }catch(QueryException $e){

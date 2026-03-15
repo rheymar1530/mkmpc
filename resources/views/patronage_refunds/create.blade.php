@@ -45,6 +45,12 @@
                 </div>
             </div>
         </div>
+        <div class="card-footer">
+            <button class="btn btn-md bg-gradient-success float-right" id="btn-post-allocation">Post</button>
+        </div>
     </div>
 </div>
+
+@include('patronage_refunds.post-modal')
 @endsection
+

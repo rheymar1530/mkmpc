@@ -56,6 +56,8 @@
                                             <span class="text-md  font-weight-bold lbl_color">Interest on Capital Share Payable: <span class="ms-sm-2 font-weight-normal ml-2"> {{number_format($details->capital_share_p,2)}} <i>(Interest Rate @ {{round($details->capital_share_rate,2)}} %)</i></span></span>
                                             <span class="text-md  font-weight-bold lbl_color">Patronage Refund Payables: <span class="ms-sm-2 font-weight-normal ml-2"> {{number_format($details->patronage_refund_p,2)}} <i>(Interest Rate @ {{round($details->patronage_refund_rate,2)}} %)</i></span></span>
 
+                                            <span class="text-md  font-weight-bold lbl_color">Remarks: <span class="ms-sm-2 font-weight-normal ml-2"> {{$details->remarks}}</span></span>
+
 
                                         </div>
                                     </div>
