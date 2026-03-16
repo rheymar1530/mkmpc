@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 // Route::get('/login','LoginController@login');
+
+Route::get('/dtr','DTRController@index');
+Route::post('/dtr/print','DTRController@print');
+
 Route::get('/test-or-print','RepaymentBulkController@TestORPrint');
 Route::get('/accrued-post','LoanAccruedController@getAccruedLoans');
 
