@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Database\QueryException;
+use App\CredentialModel;
 
 class PatronageRefundController extends Controller
 {
@@ -15,6 +16,35 @@ class PatronageRefundController extends Controller
         ["description" => "Cash" ,"key" =>"w_cash"],
         ["description" => "CBU" ,"key" =>"w_cbu"]
     ];
+
+    public function index(){
+        // $this->recurssion();
+        // return;
+
+        $data['credential']= CredentialModel::GetCredential(MySession::myPrivilegeId());
+        $data['head_title'] = "Patronage Allocation";
+
+        if(!$data['credential']->is_view){
+            return redirect('/redirect/error')->with('message', "privilege_access_invalid");
+        }
+
+        $data['patronage_refunds'] = DB::table('patronage_capital_allocation as pca')
+                               ->select(DB::raw("pca.id_patronage_capital_allocation,pca.year,capital_share_p,patronage_refund_p,pca.remarks,
+                                        CASE WHEN pca.status = 0 THEN 'For Allocation'
+                                        WHEN pca.status = 1 THEN 'Approved'
+                                        WHEN pca.status = 2 THEN 'Confirmed'
+                                        ELSE 'Cancelled' END as status_description
+                                        ,DATE_FORMAT(pca.date_created,'%m/%d/%Y') as date_created,pca.status as status_code"))
+                               ->orDerby('pca.id_patronage_capital_allocation','DESC')
+                               ->get();
+
+        $data['current_date'] = MySession::current_date();
+
+
+        return view('patronage_refunds.index',$data);
+
+        return $data;
+    }
 
     public function create(Request $request){
         $data['sidebar']="sidebar-collapse";
@@ -300,14 +330,39 @@ class PatronageRefundController extends Controller
 
 
     public function parsePatronageRefundPayables($year,$control_number){
-
+        return $this->parseChart($year,$control_number,20);
         return 169497.53;
     }
 
     public function parseInterestCapitalSharePayables($year,$control_number){
-         return 254246.29;
+        // DB::table('')
+        return $this->parseChart($year,$control_number,19);
+        return 254246.29;
     }
+    public function parseChart($year,$control_number,$id_chart_account){
+        $param = array_fill(0,4,$id_chart_account);
 
+
+        return DB::select("SELECT SUM(amount) as amount FROM (
+        SELECT ifnull(SUM(credit-debit),0) as amount
+        FROM journal_voucher as jv
+        LEFT JOIN journal_voucher_details as jvd on jvd.id_journal_voucher = jv.id_journal_voucher
+        WHERE jv.date <= '$year-12-31' AND jv.status <> 10 AND jvd.id_chart_account = ?
+        UNION ALL
+        SELECT ifnull(SUM(credit-debit),0)
+        FROM cash_disbursement as cv
+        LEFT JOIN cash_disbursement_details as cvd on cvd.id_cash_disbursement = cv.id_cash_disbursement
+        WHERE cv.date <= '$year-12-31' AND cv.status <> 10 AND cvd.id_chart_account = ?
+        UNION ALL
+        SELECT ifnull(SUM(credit-debit),0)
+        FROM cash_receipt_voucher as crb
+        LEFT JOIN cash_receipt_voucher_details as crbd on crbd.id_cash_receipt_voucher = crb.id_cash_receipt_voucher
+        WHERE crb.date <= '$year-12-31' AND crb.status <> 10 AND crbd.id_chart_account = ?
+        UNION ALL
+        SELECT ifnull(SUM(credit-debit),0)
+        FROM chart_beginning
+        WHERE status <> 10 and id_chart_account = ?) as k;",$param)[0]->amount;
+    }
 
 
 
@@ -547,6 +602,16 @@ class PatronageRefundController extends Controller
         $type = $request->type;
 
         $data['allocations'] = $this->FetchGroupAllocation($id_patronage_capital_allocation,$type);
+
+        return response($data);
+    }
+
+    public function allocation_summary(Request $request){
+        $ID_PATRONAGE_CAPITAL_ALLOCATION  = $request->ID_PATRONAGE_CAPITAL_ALLOCATION;
+        $data['details'] = DB::table('patronage_capital_allocation_details as pcad')
+                           ->select(DB::raw("SUM(interest_capital_share) as ics,SUM(patronage_refund) as pr,SUM(w_cash) as wcash,SUM(w_cbu)  as wcbu"))
+                           ->where('pcad.id_patronage_capital_allocation',$ID_PATRONAGE_CAPITAL_ALLOCATION)
+                           ->first();
 
         return response($data);
     }

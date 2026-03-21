@@ -591,11 +591,13 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get('/parse-surcharge','LoanAccruedController@parseSurcharge');
 
 	//Patronage Refund and Interest Capital Share
+	Route::get('/patronage-refund','PatronageRefundController@index');
 	Route::get('/patronage-refund/create','PatronageRefundController@create');
 	Route::post('/patronage-refund/post','PatronageRefundController@post');
 	Route::get('/patronage-refund/allocate/{id}','PatronageRefundController@allocationPage');
 	Route::get('/patronage-refund/fetch-member-allocations','PatronageRefundController@fetchMemberAllocation');
 	Route::post('/patronage-refund/post-allocation','PatronageRefundController@postAllocation');
+	Route::get('/patronage-refund/get-allocation-summary','PatronageRefundController@allocation_summary');
 
 
 
