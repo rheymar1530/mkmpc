@@ -22,17 +22,20 @@
                             @endphp
 
                             @for($i=2025;$i<=$currentYear;$i++)
-                            <option value="{{$i}}" <?php echo ($i == $sel_year) ? 'selected' : ''; ?>>{{$i}}</option>
+                                <option value="{{ $i }}" <?php echo ($i == $sel_year) ? 'selected' : ''; ?>>{{ $i }}
+                                </option>
                             @endfor
                         </select>
                     </div>
                     <div class="form-group col-md-3">
                         <label class="lbl_color">Interest Capital Share Payable</label>
-                        <input class="form-control form-control-border class_amount text-right" type="text" value="{{number_format($icsp,2)}}" name="icsp">
+                        <input class="form-control form-control-border class_amount text-right" type="text"
+                            value="{{ number_format($icsp,2) }}" name="icsp">
                     </div>
                     <div class="form-group col-md-3">
                         <label class="lbl_color">Patronage Refund Payables</label>
-                        <input class="form-control form-control-border class_amount text-right" type="text" value="{{number_format($prp,2)}}" name="prp">
+                        <input class="form-control form-control-border class_amount text-right" type="text"
+                            value="{{ number_format($prp,2) }}" name="prp">
                     </div>
                     <div class="form-group col-md-3">
                         <button class="btn btn-md round_button bg-gradient-primary">Compute Allocation</button>
@@ -40,6 +43,21 @@
                 </div>
             </form>
             <div class="row">
+                <div class="col-md-6">
+                    <p class="my-0"><b>Average Capital Share: </b>
+                        {{ number_format(round($ave_CBU ?? 0),2) }}
+                    </p>
+                    <p class="my-0"><b>Interest on Capital Share Rate: </b>
+                        {{ round($ISCRate * 100,2) }}%</p>
+
+                </div>
+                <div class="col-md-6">
+
+                    <p class="my-0"><b>Total Interest: </b>
+                        {{ number_format(round($total_Interest ?? 0),2) }}</p>
+                    <p class="my-0"><b>Patronage Refund Rate: </b>
+                        {{ round($PRRate * 100,2) }}%</p>
+                </div>
                 <div class="col-md-12">
                     @include('patronage_refunds.allocation-table')
                 </div>
@@ -53,4 +71,3 @@
 
 @include('patronage_refunds.post-modal')
 @endsection
-

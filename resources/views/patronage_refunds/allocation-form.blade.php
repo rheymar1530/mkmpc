@@ -62,12 +62,12 @@
                                             <span class="text-md  font-weight-bold lbl_color">Interest on Capital Share
                                                 Payable: <span class="ms-sm-2 font-weight-normal ml-2">
                                                     {{ number_format($details->capital_share_p,2) }} <i>(Interest
-                                                        Rate @ {{ round($details->capital_share_rate,2) }}
+                                                        Rate @ {{ round($details->capital_share_rate*100,2) }}
                                                         %)</i></span></span>
                                             <span class="text-md  font-weight-bold lbl_color">Patronage Refund Payables:
                                                 <span class="ms-sm-2 font-weight-normal ml-2">
                                                     {{ number_format($details->patronage_refund_p,2) }} <i>(Interest
-                                                        Rate @ {{ round($details->patronage_refund_rate,2) }}
+                                                        Rate @ {{ round($details->patronage_refund_rate*100,2) }}
                                                         %)</i></span></span>
 
                                             <span class="text-md  font-weight-bold lbl_color">Remarks: <span
@@ -78,6 +78,11 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-sm bg-gradient-success float-right"
+                                    onclick="print_page('/patronage-refund/print/{{ $details->id_patronage_capital_allocation }}')">Print
+                                    Allocation</button>
                             </div>
                         </div>
                     </div>
@@ -136,7 +141,7 @@
         </div>
     </div>
 </div>
-
+@include('global.print_modal')
 @include('patronage_refunds.confirm-allocation')
 @endsection
 

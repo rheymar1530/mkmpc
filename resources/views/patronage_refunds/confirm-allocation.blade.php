@@ -37,6 +37,7 @@
                     console.log({
                         response
                     });
+
                 }
             })
             $('#confirm-modal').modal('show');

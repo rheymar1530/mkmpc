@@ -1,14 +1,18 @@
 <style>
+    .table-allocation {
+        border-collapse: collapse;
+    }
+
     .table-allocation th,
     td {
-        font-size: 0.9rem;
-
-
+        font-size: 12pt;
+        border: 1px solid;
     }
 
     .table-allocation th {
         vertical-align: middle !important;
         padding: 3px;
+
     }
 
     .table-allocation td {
@@ -41,7 +45,8 @@
     </thead>
     <tbody>
         @php
-            $totalKeys = ['CBUTotal','AverageCBU','ICS','InterestTotal','PR','TotalPayables'];
+            $totalKeys =
+            ['capital_share','ave_monthly_cbu','interest_capital_share','loan_interest','patronage_refund','total'];
             $gTotals = array();
             $counter = 1;
         @endphp
@@ -56,13 +61,15 @@
             @foreach($MemberTable as $i=>$m)
                 <tr>
                     <td class="text-center">{{ $counter }}</td>
-                    <td>{{ $m['member'] }}</td>
-                    <td class="text-right">{{ number_format($m['CBUTotal'],2) }}</td>
-                    <td class="text-right">{{ number_format($m['AverageCBU'],2) }}</td>
-                    <td class="text-right b">{{ number_format($m['ICS'],2) }}</td>
-                    <td class="text-right">{{ number_format($m['InterestTotal'],2) }}</td>
-                    <td class="text-right b">{{ number_format($m['PR'],2) }}</td>
-                    <td class="text-right b">{{ number_format($m['TotalPayables'],2) }}</td>
+                    <td>{{ $m['Name'] }}</td>
+                    <td class="class_amount">{{ number_format($m['capital_share'],2) }}</td>
+                    <td class="class_amount">{{ number_format($m['ave_monthly_cbu'],2) }}</td>
+                    <td class="class_amount b">
+                        {{ number_format($m['interest_capital_share'],2) }}</td>
+                    <td class="class_amount">{{ number_format($m['loan_interest'],2) }}</td>
+                    <td class="class_amount b">{{ number_format($m['patronage_refund'],2) }}
+                    </td>
+                    <td class="class_amount b">{{ number_format($m['total'],2) }}</td>
                 </tr>
                 @foreach($totalKeys as $tk)
                     <?php
@@ -74,15 +81,15 @@
         @endforeach
     </tbody>
 
-    <tfoot>
-        <tr class="footer">
-            <td colspan="2"></td>
-            <td>{{ number_format($gTotals['CBUTotal'] ?? 0,2) }}</td>
-            <td>{{ number_format($gTotals['AverageCBU'] ?? 0,2) }}</td>
-            <td>{{ number_format($gTotals['ICS'] ?? 0,2) }}</td>
-            <td>{{ number_format($gTotals['InterestTotal'] ?? 0,2) }}</td>
-            <td>{{ number_format($gTotals['PR'] ?? 0,2) }}</td>
-            <td>{{ number_format($gTotals['TotalPayables'] ?? 0,2) }}</td>
-        </tr>
-    </tfoot>
+
+    <tr class="footer">
+        <td colspan="2"></td>
+        <td>{{ number_format($gTotals['capital_share'] ?? 0,2) }}</td>
+        <td>{{ number_format($gTotals['ave_monthly_cbu'] ?? 0,2) }}</td>
+        <td>{{ number_format($gTotals['interest_capital_share'] ?? 0,2) }}</td>
+        <td>{{ number_format($gTotals['loan_interest'] ?? 0,2) }}</td>
+        <td>{{ number_format($gTotals['patronage_refund'] ?? 0,2) }}</td>
+        <td>{{ number_format($gTotals['total'] ?? 0,2) }}</td>
+    </tr>
+
 </table>

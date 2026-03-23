@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Database\QueryException;
 use App\CredentialModel;
+use PDF;
 
 class PatronageRefundController extends Controller
 {
@@ -63,6 +64,7 @@ class PatronageRefundController extends Controller
 
         // foreach($mem_allocation as $m){}
 
+
         return view('patronage_refunds.create',$data);
 
     }
@@ -74,7 +76,7 @@ class PatronageRefundController extends Controller
         $MonthCount = count($transactionDates);
 
 
-
+        $output = array();
 
         $StartDate = $transactionDates[0]['start'];
         $EndDate = $transactionDates[$MonthCount-1]['end'];
@@ -274,7 +276,8 @@ class PatronageRefundController extends Controller
         | STEP 6 — REBUILD GROUP STRUCTURE
         |--------------------------------------------------------------------------
         */
-
+        $output['ave_CBU'] = 0;
+        $output['total_Interest'] = 0;
         foreach ($AllMembers as $m) {
 
             $group = $m['group'];
@@ -292,12 +295,17 @@ class PatronageRefundController extends Controller
                 'PR' => $m['PR'],
                 'TotalPayables' => $m['TotalPayables']
             ];
+
+            $output['ave_CBU'] += $m['AverageCBU'];
+            $output['total_Interest'] += $m['InterestTotal'];
+
         }
 
-        $output = array();
+
         $output['MemberFinalData'] = $MemberFinalData;
         $output['ISCRate']= $ISCRate;
         $output['PRRate'] = $PRRate;
+
 
         return $output;
 
@@ -570,7 +578,7 @@ class PatronageRefundController extends Controller
 
         $defGroup = $groupings[0]->group_ref;
 
-        $data['AllocationTable'] = $this->FetchGroupAllocation($id_patronage_capital_allocation,$defGroup);
+        $data['AllocationTable'] = $this->FetchGroupAllocation($id_patronage_capital_allocation,$defGroup,false);
 
 
         return view('patronage_refunds.allocation-form',$data);
@@ -578,22 +586,29 @@ class PatronageRefundController extends Controller
 
     }
 
-    public function FetchGroupAllocation($id_patronage_capital_allocation,$id_brgy_lgu){
+    public function FetchGroupAllocation($id_patronage_capital_allocation,$id_brgy_lgu,$all){
         $output = DB::table('patronage_capital_allocation_details as pc')
-                    ->select('m.id_member',DB::raw("FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as Name,
+                    ->select('m.id_member',DB::raw("FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as Name,if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name)) as groupings,if(m.id_baranggay_lgu is null,0,m.id_baranggay_lgu) as group_ref,
                     pc.capital_share,pc.ave_monthly_cbu,pc.interest_capital_share,pc.loan_interest,pc.patronage_refund,pc.total,pc.w_cash,pc.w_cbu,if(pc.w_cash + pc.w_cbu =0,pc.total,pc.w_cash) as def_val"))
                    ->leftJoin('member as m','m.id_member','pc.id_member')
-                   ->where('pc.id_patronage_capital_allocation',$id_patronage_capital_allocation)
-                   ->where(function($query) use($id_brgy_lgu){
+                   ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','m.id_baranggay_lgu')
+                   ->where('pc.id_patronage_capital_allocation',$id_patronage_capital_allocation);
+        if(!$all){
+            $output->where(function($query) use($id_brgy_lgu){
                         if($id_brgy_lgu > 0){
                             $query->where('m.id_baranggay_lgu',$id_brgy_lgu);
                         }else{
                              $query->whereNull('m.id_baranggay_lgu');
                         }
-                   })
-                   ->orderBy('Name')
-                   ->get();
-        return $output;
+                   });
+        }else{
+            $output->orderBy(DB::raw("if(m.id_baranggay_lgu is null,3,bl.type) "))
+                    ->orderBy(DB::raw("concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) "));
+        }
+
+        return $output->orderBy('Name')->get();
+
+        //  $output;
     }
 
 
@@ -601,7 +616,7 @@ class PatronageRefundController extends Controller
         $id_patronage_capital_allocation = $request->id_patronage_capital_allocation;
         $type = $request->type;
 
-        $data['allocations'] = $this->FetchGroupAllocation($id_patronage_capital_allocation,$type);
+        $data['allocations'] = $this->FetchGroupAllocation($id_patronage_capital_allocation,$type,false);
 
         return response($data);
     }
@@ -614,6 +629,35 @@ class PatronageRefundController extends Controller
                            ->first();
 
         return response($data);
+    }
+
+    public function PrintPatronageRefund($id_patronage_capital_allocation){
+        $out = $this->FetchGroupAllocation($id_patronage_capital_allocation,0,true);
+        $g = new GroupArrayController();
+
+        $MemberLists = $g->array_group_by($out,['groupings']);
+
+        $data['MemberFinalData'] = json_decode(json_encode($MemberLists),true);
+        // dd($data);
+        $data['file_name'] = "Patronage Refund Allocation";
+        $data['details'] = DB::table('patronage_capital_allocation')->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)->first();
+
+        $html = view('patronage_refunds.print-allocation-all',$data);
+
+
+        $pdf = PDF::loadHtml($html);
+        $pdf->setOption("encoding","UTF-8");
+        $pdf->setOption('margin-bottom', '0.33in');
+        $pdf->setOption('margin-top', '0.33in');
+        $pdf->setOption('margin-right', '0.33in');
+        $pdf->setOption('margin-left', '0.42in');
+        $pdf->setOption('header-left', 'Page [page] of [toPage]');
+        // $pdf->setOption('header-right', 'No.: '.$data['details']->month_year.'-'.$data['details']->id_repayment_statement);
+
+        $pdf->setOption('header-font-size', 8);
+        $pdf->setOption('header-font-name', 'Calibri');
+
+        return $pdf->stream("{$data['file_name']}.pdf",array('Attachment'=>1));
     }
 
 
