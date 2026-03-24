@@ -31,12 +31,12 @@
         <tr>
             <th></th>
             <th>Member</th>
-            <th>Total<br>Capital Share</th>
-            <th>Ave<br>Monthly CBU</th>
-            <th>Interest<br>on Capital Share</th>
-            <th>Total<br>Interest on Loan</th>
-            <th>Patronage Refund</th>
-            <th>Total</th>
+            <th>TSM</th>
+            <th>ASM</th>
+            <th>ISC</th>
+            <th>INTEREST ON LOAN</th>
+            <th>PR</th>
+            <th>TOTAL</th>
         </tr>
     </thead>
     <tbody>

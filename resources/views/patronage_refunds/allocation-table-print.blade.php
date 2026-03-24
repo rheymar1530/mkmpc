@@ -27,20 +27,26 @@
     .b {
         font-weight: bold;
     }
+    .text-center{
+        text-align: center;
+    }
 
 </style>
 
-<table class="table table-bordered table-allocation table-head-fixed mt-3">
+<table class="table table-bordered table-allocation table-head-fixed mt-3" style="width:34cm">
     <thead>
         <tr>
             <th></th>
-            <th>Member</th>
-            <th>Total<br>Capital Share</th>
-            <th>Ave<br>Monthly CBU</th>
-            <th>Interest<br>on Capital Share</th>
-            <th>Total<br>Interest on Loan</th>
-            <th>Patronage Refund</th>
-            <th>Total</th>
+            <th>MEMBER</th>
+            <th>TSM</th>
+            <th>ASM</th>
+            <th>ICS</th>
+            <th>INTEREST<br>ON LOAN</th>
+            <th>PR</th>
+            <th>TOTAL</th>
+            <th style="width:2.5cm">CBU<br>RETENTION</th>
+            <th style="width:2.5cm">NET</th>
+            <th style="width:4cm">SIGNATURE</th>
         </tr>
     </thead>
     <tbody>
@@ -52,16 +58,10 @@
         @endphp
 
 
-
-        @foreach($MemberFinalData as $group=>$MemberTable)
-            <tr class="table-primary">
-                <td colspan="8" class="font-weight-bold">{{ $group }}</td>
-            </tr>
-
-            @foreach($MemberTable as $i=>$m)
+            @foreach($allocations as $i=>$m)
                 <tr>
                     <td class="text-center">{{ $counter }}</td>
-                    <td>{{ $m['Name'] }}</td>
+                    <td>{{ strtoupper($m['Name']) }}</td>
                     <td class="class_amount">{{ number_format($m['capital_share'],2) }}</td>
                     <td class="class_amount">{{ number_format($m['ave_monthly_cbu'],2) }}</td>
                     <td class="class_amount b">
@@ -70,6 +70,9 @@
                     <td class="class_amount b">{{ number_format($m['patronage_refund'],2) }}
                     </td>
                     <td class="class_amount b">{{ number_format($m['total'],2) }}</td>
+                    <td></td>
+                    <td></td>
+                    <td style="padding-top:8mm;">&nbsp;</td>
                 </tr>
                 @foreach($totalKeys as $tk)
                     <?php
@@ -78,7 +81,6 @@
                 @endforeach
                 <?php $counter++; ?>
             @endforeach
-        @endforeach
     </tbody>
 
 
@@ -90,6 +92,9 @@
         <td>{{ number_format($gTotals['loan_interest'] ?? 0,2) }}</td>
         <td>{{ number_format($gTotals['patronage_refund'] ?? 0,2) }}</td>
         <td>{{ number_format($gTotals['total'] ?? 0,2) }}</td>
+        <td></td>
+        <td></td>
+        <td></td>
     </tr>
 
 </table>

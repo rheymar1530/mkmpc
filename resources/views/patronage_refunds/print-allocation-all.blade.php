@@ -24,7 +24,7 @@
             width: 50%;
         }
 
-        @@page {
+        @page {
             margin-left: 1in;
             margin-right: 1in;
             margin-top: 1in;
@@ -119,65 +119,59 @@
 </head>
 
 <body>
-    <header>
-        <div class="header" style="margin-top: 100px !important;">
-            <p style="font-size: 20px;margin-top: -15px"><b>{{ config('variables.coop_name') }}</b>
-            </p>
-            <p style="font-size: 17px;margin-top: -21px">{{ config('variables.coop_address') }}</p>
-            <p style="font-size: 20px;margin-top: -15px"><b>Patronage Refund and interest on Capital Share
-                    Allocation</b></p>
+    @php $size = count($MemberFinalData);  $counter = 1; @endphp
+    @foreach($MemberFinalData as $group=>$MemberTable)
+        <header>
+            <div class="header" style="margin-top: 100px !important;">
+                <p style="font-size: 20px;margin-top: -15px">
+                    <b>{{ config('variables.coop_name') }}</b>
+                </p>
+                <p style="font-size: 17px;margin-top: -21px">{{ config('variables.coop_address') }}
+                </p>
+                <p style="font-size: 20px;margin-top: -15px"><b>Patronage Refund and Interest on Capital Share
+                        Allocation</b></p>
+                <p style="font-size: 17px;margin-top: -21px">{{ $group }}
+                </p>
 
-        </div>
-    </header>
-    <?php
+            </div>
+        </header>
+        <?php
 		$total = 0;
-
-
-
 
 		$totalPayment = 0;
 	?>
-    <div class="row" style="margin-top: 0.5cm;">
-        <div class="columnLeft">
-            <p class="my-0"><b>ID: </b>{{ $details->id_patronage_capital_allocation }}</p>
-            <p class="my-0"><b>Year: </b>{{ $details->year }}</p>
-            <p class="my-0"><b>Remarks: </b>{{ $details->remarks ?? '' }}</p>
+        <div class="row" style="margin-top: 0.5cm;">
+            <div class="columnLeft">
+                <p class="my-0"><b>ID: </b>{{ $details->id_patronage_capital_allocation }}</p>
+                <p class="my-0"><b>Year: </b>{{ $details->year }}</p>
 
+
+            </div>
+            <div class="columnRight">
+                <p class="my-0"><b>Interest on Capital Share: </b>
+                    {{ number_format($details->capital_share_p,2) }} <i>(Rate @
+                        {{ round($details->capital_share_rate * 100,2) }}
+                        %)</i></p>
+                <p class="my-0"><b>Patronage Refund: </b> {{ number_format($details->patronage_refund_p,2) }}
+                    <i>(Rate @ {{ round($details->patronage_refund_rate *100,2) }}
+                        %)</i></p>
+
+            </div>
         </div>
-        <div class="columnRight">
-            <p class="my-0"><b>Interest on Capital Share: </b>
-                {{ number_format($details->capital_share_p,2) }} <i>(Rate @
-                    {{ round($details->capital_share_rate * 100,2) }}
-                    %)</i></p>
-            <p class="my-0"><b>Patronage Refund: </b> {{ number_format($details->patronage_refund_p,2) }}
-                <i>(Rate @ {{ round($details->patronage_refund_rate *100,2) }}
-                    %)</i></p>
-
+        <div class="row">
+            @include('patronage_refunds.allocation-table-print',['allocations'=>$MemberTable])
         </div>
-    </div>
-    <div class="row">
-        <!-- <table class="tbl-mngr loan" width="100%"> -->
-        @include('patronage_refunds.allocation-table-print')
-    </div>
 
 
-    <!-- <table width="100%" style="border-spacing: 0.5cm !important;border-collapse: separate; margin-top: 1.5cm;">
-        <tr>
-            <td class="text_ex" style="border-bottom: 1px solid"></td>
-            <td class="text_ex"></td>
 
-            <td class="text_ex"></td>
-        </tr>
-    </table>
-    <table width="100%" style="margin-top: -0.3cm;font-size:3.9mm !important">
-        <tr>
-            <td class="text_ex" style="width: 33.33%;text-align: center;">Prepared by</td>
-            <td class="text_ex" style="width: 33.33%;text-align: center"></td>
+        @if($counter != $size)
+            <div style="page-break-after: always"></div>
+        @endif
 
-            <td class="text_ex" style="width: 33.33%;text-align: center"></td>
-
-        </tr>
-    </table> -->
+        @php
+            $counter++;
+        @endphp
+    @endforeach
 </body>
 
 </html>

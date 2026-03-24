@@ -44,6 +44,9 @@
         </div>
     </div> -->
     <div class="col-md-12">
+        <?php $back_link = (request()->get('href') == '')?'/patronage-refund':request()->get('href'); ?>
+        <a class="btn bg-gradient-secondary btn-sm" href="{{ $back_link }}" style="margin-bottom:10px"><i
+                class="fas fa-chevron-circle-left"></i>&nbsp;&nbsp;Back to Allocation List</a>
         <div class="card">
             <div class="card-body mx-4">
                 <div class="text-center">
@@ -104,14 +107,15 @@
                         <tr>
                             <th></th>
                             <th>Member</th>
-                            <th>Total<br>Capital Share</th>
-                            <th>Ave<br>Monthly CBU</th>
-                            <th>Interest<br>on Capital Share</th>
-                            <th>Total<br>Interest on Loan</th>
-                            <th>Patronage <br> Refund</th>
+                            <th>TSM</th>
+                            <th>ASM</th>
+                            <th>ISC</th>
+                            <th>Interest on Loan</th>
+                            <th>PR</th>
                             <th>Total</th>
-                            <th>Withdraw</th>
-                            <th>Add on CBU</th>
+                            <th>CBU Retention</th>
+                            <th>To be Released</th>
+
                         </tr>
                     </thead>
                     <tbody id="body-allocation">
@@ -222,10 +226,11 @@
                 out += `<td class="text-right">${number_format(item.loan_interest,2)}</td>`;
                 out += `<td class="text-right">${number_format(item.patronage_refund,2)}</td>`;
                 out += `<td class="text-right">${number_format(item.total,2)}</td>`;
-                out +=
-                    `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cash ff" name="cash" value="${number_format(item.def_val,2)}"></td>`;
+
                 out +=
                     `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cbu ff" name="cbu" value="${number_format(item.w_cbu,2)}"></td>`;
+                 out +=
+                    `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cash ff" name="cash" value="${number_format(item.def_val,2)}"></td>`;
                 out += `</tr>`;
             });
             $('#body-allocation').html(out);
@@ -239,8 +244,9 @@
             grand += `<td class="text-right">${number_format(total_loan_interest,2)}</td>`;
             grand += `<td class="text-right">${number_format(total_patronage_refund,2)}</td>`;
             grand += `<td class="text-right">${number_format(total_total,2)}</td>`;
-            grand += `<td class="text-right pr-3" id="total-cash">${number_format(total_def_val,2)}</td>`;
             grand += `<td class="text-right pr-3" id="total-cbu">${number_format(total_w_cbu,2)}</td>`;
+            grand += `<td class="text-right pr-3" id="total-cash">${number_format(total_def_val,2)}</td>`;
+
             grand += `</tr>`;
 
             $('#footer-allocation').html(grand);

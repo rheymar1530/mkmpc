@@ -226,37 +226,71 @@ class CBUController extends Controller
         return $data;
     }
 
-    public function CBUMonthlyQueryBase(){
-        $sql = "SELECT c.date_received as transaction_date,ifnull(amount,0) as amount,id_member
-            FROM cash_receipt_details as cd
-            LEFT JOIN cash_receipt as c on c.id_cash_receipt = cd.id_cash_receipt
-            LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = cd.id_payment_type
-            WHERE pt.is_cbu = 1 AND pt.type in (1) AND status <> 10  and c.date_received <= ?
-            UNION ALL
-            SELECT loan.date_released,ifnull(lc.calculated_charge,0) as amount,id_member from loan_charges as lc
-            LEFT JOIN loan on loan.id_loan = lc.id_loan
-            LEFT JOIN tbl_payment_type as pt on pt.reference = lc.id_loan_fees and pt.type = 2
-            WHERE  pt.is_cbu = 1 AND (loan.status in (6) or loan.loan_status in (1)) and pt.type =2
-            and loan.date_released  <= ?
-            UNION ALL
-            SELECT rt.transaction_date,ifnull(rf.amount,0),id_member FROM repayment_fees as rf
-            LEFT JOIN repayment_transaction as rt on rt.id_repayment_transaction = rf.id_repayment_transaction
-            LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = rf.id_payment_type
-            WHERE pt.is_cbu = 1 and pt.type =3 AND rt.status <> 10 AND rt.transaction_date  <= ?
-            UNION ALL
-            SELECT date,ifnull(amount,0),id_member FROM cbu_beginning where date  <= ?
-            UNION ALL
-            SELECT cd.date,(cdd.debit*-1) as amount,cd.id_member FROM cash_disbursement as cd
-            LEFT JOIN cash_disbursement_details as cdd on cdd.id_cash_disbursement = cd.id_cash_disbursement
-            LEFT JOIN chart_account as ca on ca.id_chart_account = cdd.id_chart_account
-            WHERE ca.iscbu = 1 and cd.status <> 10 AND cd.date  <= ?
-            UNION ALL
-            SELECT jv.date,(jvd.credit-jvd.debit) as amount,jv.id_member FROM journal_voucher as jv
-            LEFT JOIN journal_voucher_details as jvd on jvd.id_journal_voucher = jv.id_journal_voucher
-            LEFT JOIN chart_account as ca on ca.id_chart_account = jvd.id_chart_account
-            WHERE ca.iscbu = 1 and jv.status <> 10 AND jv.date  <= ? AND jv.type = 1
-            UNION ALL
-            SELECT curdate(),0,id_member FROM member where status=1";
+    public function CBUMonthlyQueryBase($type=1){
+        if($type == 1){
+            $sql = "SELECT c.date_received as transaction_date,ifnull(amount,0) as amount,id_member
+                FROM cash_receipt_details as cd
+                LEFT JOIN cash_receipt as c on c.id_cash_receipt = cd.id_cash_receipt
+                LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = cd.id_payment_type
+                WHERE pt.is_cbu = 1 AND pt.type in (1) AND status <> 10  and c.date_received <= ?
+                UNION ALL
+                SELECT loan.date_released,ifnull(lc.calculated_charge,0) as amount,id_member from loan_charges as lc
+                LEFT JOIN loan on loan.id_loan = lc.id_loan
+                LEFT JOIN tbl_payment_type as pt on pt.reference = lc.id_loan_fees and pt.type = 2
+                WHERE  pt.is_cbu = 1 AND (loan.status in (6) or loan.loan_status in (1)) and pt.type =2
+                and loan.date_released  <= ?
+                UNION ALL
+                SELECT rt.transaction_date,ifnull(rf.amount,0),id_member FROM repayment_fees as rf
+                LEFT JOIN repayment_transaction as rt on rt.id_repayment_transaction = rf.id_repayment_transaction
+                LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = rf.id_payment_type
+                WHERE pt.is_cbu = 1 and pt.type =3 AND rt.status <> 10 AND rt.transaction_date  <= ?
+                UNION ALL
+                SELECT date,ifnull(amount,0),id_member FROM cbu_beginning where date  <= ?
+                UNION ALL
+                SELECT cd.date,(cdd.debit*-1) as amount,cd.id_member FROM cash_disbursement as cd
+                LEFT JOIN cash_disbursement_details as cdd on cdd.id_cash_disbursement = cd.id_cash_disbursement
+                LEFT JOIN chart_account as ca on ca.id_chart_account = cdd.id_chart_account
+                WHERE ca.iscbu = 1 and cd.status <> 10 AND cd.date  <= ?
+                UNION ALL
+                SELECT jv.date,(jvd.credit-jvd.debit) as amount,jv.id_member FROM journal_voucher as jv
+                LEFT JOIN journal_voucher_details as jvd on jvd.id_journal_voucher = jv.id_journal_voucher
+                LEFT JOIN chart_account as ca on ca.id_chart_account = jvd.id_chart_account
+                WHERE ca.iscbu = 1 and jv.status <> 10 AND jv.date  <= ? AND jv.type = 1
+                UNION ALL
+                SELECT curdate(),0,id_member FROM member where status=1";
+        }else{
+            $sql = "SELECT c.date_received as transaction_date,ifnull(amount,0) as amount,id_member
+                FROM cash_receipt_details as cd
+                LEFT JOIN cash_receipt as c on c.id_cash_receipt = cd.id_cash_receipt
+                LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = cd.id_payment_type
+                WHERE pt.is_cbu = 1 AND pt.type in (1) AND status <> 10 and c.date_received >= ?  and c.date_received <= ?
+                UNION ALL
+                SELECT loan.date_released,ifnull(lc.calculated_charge,0) as amount,id_member from loan_charges as lc
+                LEFT JOIN loan on loan.id_loan = lc.id_loan
+                LEFT JOIN tbl_payment_type as pt on pt.reference = lc.id_loan_fees and pt.type = 2
+                WHERE  pt.is_cbu = 1 AND (loan.status in (6) or loan.loan_status in (1)) and pt.type =2 and loan.date_released  >= ?
+                and loan.date_released  <= ?
+                UNION ALL
+                SELECT rt.transaction_date,ifnull(rf.amount,0),id_member FROM repayment_fees as rf
+                LEFT JOIN repayment_transaction as rt on rt.id_repayment_transaction = rf.id_repayment_transaction
+                LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = rf.id_payment_type
+                WHERE pt.is_cbu = 1 and pt.type =3 AND rt.status <> 10 AND rt.transaction_date  >= ? AND rt.transaction_date  <= ?
+                UNION ALL
+                SELECT date,ifnull(amount,0),id_member FROM cbu_beginning where date  >= ? AND date  <= ?
+                UNION ALL
+                SELECT cd.date,(cdd.debit*-1) as amount,cd.id_member FROM cash_disbursement as cd
+                LEFT JOIN cash_disbursement_details as cdd on cdd.id_cash_disbursement = cd.id_cash_disbursement
+                LEFT JOIN chart_account as ca on ca.id_chart_account = cdd.id_chart_account
+                WHERE ca.iscbu = 1 and cd.status = 999999999999 AND cd.date  >= ? AND cd.date  <= ?
+                UNION ALL
+                SELECT jv.date,(jvd.credit-jvd.debit) as amount,jv.id_member FROM journal_voucher as jv
+                LEFT JOIN journal_voucher_details as jvd on jvd.id_journal_voucher = jv.id_journal_voucher
+                LEFT JOIN chart_account as ca on ca.id_chart_account = jvd.id_chart_account
+                WHERE ca.iscbu = 1 and jv.status <> 10 AND jv.date  >= ?  AND jv.date  <= ? AND jv.type = 1
+                UNION ALL
+                SELECT curdate(),0,id_member FROM member where status=1";
+        }
+
 
         return $sql;
     }

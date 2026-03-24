@@ -71,3 +71,29 @@
 
 @include('patronage_refunds.post-modal')
 @endsection
+
+@push('scripts')
+<script type="text/javascript">
+    $(document).on("focus",".class_amount",function(){
+    	var val = $(this).val();
+    	if(val == '' || val == 'NaN'){
+    		val = '0.00';
+
+    		$(this).val('');
+
+    		return;
+    	}
+    	$(this).val(decode_number_format(val));
+    })
+    $(document).on("blur",".class_amount",function(){
+    	var val = $(this).val();
+    	if(!$.isNumeric(val)){
+    		val = 0;
+    		$(this).val('');
+
+    		return;
+    	}
+    	$(this).val(number_format(parseFloat(val)));
+    })
+</script>
+@endpush

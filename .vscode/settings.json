@@ -36,7 +36,7 @@
     // FORMATTERS
     // ==========================================
     "[php]": {
-        "editor.defaultFormatter": "open-sourcerers.laravel-pint"
+         "editor.defaultFormatter": "open-sourcerers.laravel-pint"
     },
     "[blade]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"

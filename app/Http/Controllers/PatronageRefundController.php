@@ -57,6 +57,8 @@ class PatronageRefundController extends Controller
         $data['DefAllocation'] = $this->DefAllocation;
 
 
+
+
         $mem_allocation = $this->CompileAllocationData($year,$ICP,$PR);
 
         $data = [...$data,...$mem_allocation ];
@@ -83,17 +85,25 @@ class PatronageRefundController extends Controller
 
 
         $tempArray = array();
-
+        $monthAr = [];
         foreach($transactionDates as $tr){
-            array_push($tempArray,"SUM(CASE WHEN transaction_date >= '{$tr['start']}' AND transaction_date <= '{$tr['end']}' THEN amount else 0 END) as '{$tr['month']}'");
+            // array_push($tempArray,"SUM(CASE WHEN transaction_date >= '{$tr['start']}' AND transaction_date <= '{$tr['end']}' THEN amount else 0 END) as '{$tr['month']}'");
+            array_push($tempArray,"SUM(CASE WHEN transaction_date <= '{$tr['end']}' THEN amount else 0 END) as '{$tr['month']}'");
+            $monthAr[]=$tr['month'];
         }
 
-        $TransactionDateString = implode(', ',$tempArray).", SUM(amount) as Total";
+        $monthSum = "`".implode("`+`",$monthAr)."`";
+
+
+
+
+
+        $TransactionDateString = implode(', ',$tempArray)."";
 
 
         $g = new GroupArrayController();
 
-        $cbuData = $this->MembersCBU($StartDate,$EndDate,$TransactionDateString);
+        $cbuData = $this->MembersCBU($StartDate,$EndDate,$TransactionDateString,$monthSum);
         $TotalCBU = collect($cbuData)->sum('Total');
 
 
@@ -251,7 +261,7 @@ class PatronageRefundController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | STEP 5 — DISTRIBUTE PR ROUNDING
+        | STEP 5 — DISTRIBUTE PR ROUNDING (SLOW)
         |--------------------------------------------------------------------------
         */
 
@@ -317,21 +327,33 @@ class PatronageRefundController extends Controller
         return $interestData;
     }
 
-    public function MembersCBU(string $StartDate,string $EndDate,string $TransactionDateString){
+    public function MembersCBU(string $StartDate,string $EndDate,string $TransactionDateString,string $monthSum){
         $cbuCon = new CBUController();
-        $CBUSQL = $cbuCon->CBUMonthlyQueryBase();
+        $CBUSQL = $cbuCon->CBUMonthlyQueryBase(1);
 
-        $sql =" SELECT FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as Name,m.id_member,$TransactionDateString FROM (
+
+
+        // dd($TransactionDateString);
+
+
+
+        $sql =" with cbu as (
+                SELECT FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as Name,m.id_member,$TransactionDateString FROM (
             $CBUSQL
         ) as cbu
         LEFT JOIN member as m on m.id_member = cbu.id_member
-        WHERE cbu.transaction_date >= ?
+
         GROUP BY cbu.id_member
         HAVING SUM(amount) > 0
-        ORDER BY Name;";
-
+        ORDER BY Name
+        ) SELECT cbu.*,$monthSum as Total FROM cbu;";
+        // WHERE cbu.transaction_date >= ?
         $param = array_fill(0,6,$EndDate);
-        $cbuData = DB::select($sql,[...$param,$StartDate]);
+
+        //,$StartDate
+        $cbuData = DB::select($sql,[...$param]);
+
+        // $cbuData = DB::select($sql,[$StartDate,$EndDate,$StartDate,$EndDate,$StartDate,$EndDate,$StartDate,$EndDate,$StartDate,$EndDate,$StartDate,$EndDate,$StartDate]);
 
         return $cbuData;
     }
@@ -420,6 +442,8 @@ class PatronageRefundController extends Controller
 
         $m = $this->CompileAllocationData($year,$ICP,$PR);
 
+
+
         $opcode = $request->opcode  ?? 0;
         $id_patronage_capital_allocation = $request->id_patronage_capital_allocation ?? 0;
 
@@ -464,6 +488,16 @@ class PatronageRefundController extends Controller
 
             DB::table('patronage_capital_allocation_details')
             ->insert($allocationContent);
+
+            // POST ALLOCATION PER BARANGGAY
+            DB::select("INSERT INTO patronage_capital_allocation_group (id_patronage_capital_allocation,id_baranggay_lgu,isc,pr)
+            SELECT pcad.id_patronage_capital_allocation ,ifnull(m.id_baranggay_lgu,0) AS id_baranggay_lgu,SUM(interest_capital_share) as ics,SUM(patronage_refund) as pr
+            FROM patronage_capital_allocation_details as pcad
+            LEFT JOIN member as m on m.id_member = pcad.id_member
+            LEFT JOIN baranggay_lgu as bl on bl.id_baranggay_lgu = m.id_baranggay_lgu
+            WHERE pcad.id_patronage_capital_allocation = ?
+            GROUP BY ifnull(m.id_baranggay_lgu,0)
+            ORDER BY if(m.id_baranggay_lgu is null,3,bl.type),concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name);",[$id_patronage_capital_allocation]);
 
             DB::commit();
 
@@ -571,6 +605,7 @@ class PatronageRefundController extends Controller
                         ->select(DB::raw("if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name)) as groupings,if(m.id_baranggay_lgu is null,0,m.id_baranggay_lgu) as group_ref"))
                         ->leftJoin('member as m','m.id_member','pra.id_member')
                         ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','m.id_baranggay_lgu')
+                        ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
                         ->orderBy(DB::raw("if(m.id_baranggay_lgu is null,3,bl.type) "))
                         ->orderBy(DB::raw("concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) "))
                         ->groupBy(DB::raw("if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name))"))
@@ -652,6 +687,7 @@ class PatronageRefundController extends Controller
         $pdf->setOption('margin-right', '0.33in');
         $pdf->setOption('margin-left', '0.42in');
         $pdf->setOption('header-left', 'Page [page] of [toPage]');
+        $pdf->setOrientation('landscape');
         // $pdf->setOption('header-right', 'No.: '.$data['details']->month_year.'-'.$data['details']->id_repayment_statement);
 
         $pdf->setOption('header-font-size', 8);
