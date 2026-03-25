@@ -9,6 +9,7 @@ use DB;
 use Illuminate\Database\QueryException;
 use App\CredentialModel;
 use PDF;
+use App\JVModel;
 
 class PatronageRefundController extends Controller
 {
@@ -17,10 +18,28 @@ class PatronageRefundController extends Controller
         ["description" => "Cash" ,"key" =>"w_cash"],
         ["description" => "CBU" ,"key" =>"w_cbu"]
     ];
+    function getRetentionRate(float $amount): float
+    {
+        $ranges = config('patronage-allocation-net.ranges');
 
+
+        foreach ($ranges as $range) {
+            if (
+                $amount >= $range['min'] &&
+                (is_null($range['max']) || $amount <= $range['max'])
+            ) {
+                return $range['rate']/100;
+            }
+        }
+
+        return 0;
+    }
     public function index(){
         // $this->recurssion();
         // return;
+
+
+
 
         $data['credential']= CredentialModel::GetCredential(MySession::myPrivilegeId());
         $data['head_title'] = "Patronage Allocation";
@@ -294,6 +313,13 @@ class PatronageRefundController extends Controller
 
             $m['TotalPayables'] = $m['ICS'] + $m['PR'];
 
+            $rate = $this->getRetentionRate($m['TotalPayables']);
+
+            $net = round($m['TotalPayables']*$rate,2);
+
+            $cbu_retention = $m['TotalPayables']-$net;
+
+
             $MemberFinalData[$group][] = [
                 'id_member' => $m['id_member'],
                 'member' => $m['member'],
@@ -303,7 +329,12 @@ class PatronageRefundController extends Controller
                 'AverageCBU' => $m['AverageCBU'],
                 'ICS' => $m['ICS'],
                 'PR' => $m['PR'],
-                'TotalPayables' => $m['TotalPayables']
+                'TotalPayables' => $m['TotalPayables'],
+                'NetRate' => $rate*100,
+                'Net'=>$net,
+                'CBU_Retention'=>$cbu_retention
+
+
             ];
 
             $output['ave_CBU'] += $m['AverageCBU'];
@@ -472,7 +503,8 @@ class PatronageRefundController extends Controller
                         'loan_interest'=>$c['InterestTotal'],
                         'patronage_refund'=>$c['PR'],
                         'total'=>$c['TotalPayables'],
-                         $def_key=>$c['TotalPayables']
+                        'w_cbu'=>$c['CBU_Retention'],
+                        'w_cash'=>$c['Net']
                     ];
                 }
             }
@@ -498,6 +530,11 @@ class PatronageRefundController extends Controller
             WHERE pcad.id_patronage_capital_allocation = ?
             GROUP BY ifnull(m.id_baranggay_lgu,0)
             ORDER BY if(m.id_baranggay_lgu is null,3,bl.type),concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name);",[$id_patronage_capital_allocation]);
+
+            DB::select("UPDATE patronage_capital_allocation_details as pcad
+            LEFT JOIN member as m on m.id_member = pcad.id_member
+            SET pcad.id_baranggay_lgu = m.id_baranggay_lgu
+            WHERE pcad.id_patronage_capital_allocation = ?",[$id_patronage_capital_allocation]);
 
             DB::commit();
 
@@ -527,6 +564,7 @@ class PatronageRefundController extends Controller
     public function postAllocation(Request $request){
         if($request->ajax()){
             $allocations = $request->allocations ?? [];
+            $id_baranggay_lgu = $request->id_baranggay_lgu;
             $id_patronage_capital_allocation = $request->id_patronage_capital_allocation;
 
             $idMembers = collect($allocations)->pluck('id_member')->toArray();
@@ -546,11 +584,13 @@ class PatronageRefundController extends Controller
                     $cash = ($al['cash'] == "") ? 0 : $al['cash'];
 
                     $cbu = ($al['cbu'] == "") ? 0 : $al['cbu'];
-                    $totalAlloc = (float)$cash + (float)$cbu;
-                    $validationAmount = (float)$allocationsValidation[$al['id_member']]->total;
+                    $totalAlloc = ROUND((float)$cash + (float)$cbu,2);
+                    $validationAmount = ROUND((float)$allocationsValidation[$al['id_member']]->total,2);
 
                     if($totalAlloc !== $validationAmount){
                         $invalidAmount[]=$al['id_member'];
+
+                        dd($totalAlloc,$validationAmount);
                     }
 
                     $allocationOBJ[$al['id_member']]= [
@@ -573,6 +613,35 @@ class PatronageRefundController extends Controller
                     ->where('id_member',$id_member)
                     ->update($al);
                 }
+
+                DB::table('patronage_capital_allocation_group')
+                ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+                ->where(function($q) use($id_baranggay_lgu){
+                    if($id_baranggay_lgu > 0){
+                        $q->where('id_baranggay_lgu',$id_baranggay_lgu);
+                    }else{
+                        $q->whereNull('id_baranggay_lgu');
+                    }
+                })
+
+                ->update(['status'=>1]);
+
+                $t = DB::table('patronage_capital_allocation_details')
+                ->select('id_member')
+                ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+                ->where(function($q) use($id_baranggay_lgu){
+                    if($id_baranggay_lgu > 0){
+                        $q->where('id_baranggay_lgu',$id_baranggay_lgu);
+                    }else{
+                        $q->whereNull('id_baranggay_lgu');
+                    }
+                })
+                ->get();
+
+                foreach($t as $d){
+                    JVModel::PRAllocation($id_patronage_capital_allocation,$d->id_member);
+                }
+
 
                 DB::commit();
 
@@ -601,10 +670,11 @@ class PatronageRefundController extends Controller
                             ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
                             ->first();
 
+
         $groupings = $data['Groups'] = DB::table('patronage_capital_allocation_details as pra')
                         ->select(DB::raw("if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name)) as groupings,if(m.id_baranggay_lgu is null,0,m.id_baranggay_lgu) as group_ref"))
                         ->leftJoin('member as m','m.id_member','pra.id_member')
-                        ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','m.id_baranggay_lgu')
+                        ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','pra.id_baranggay_lgu')
                         ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
                         ->orderBy(DB::raw("if(m.id_baranggay_lgu is null,3,bl.type) "))
                         ->orderBy(DB::raw("concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) "))
@@ -624,20 +694,20 @@ class PatronageRefundController extends Controller
     public function FetchGroupAllocation($id_patronage_capital_allocation,$id_brgy_lgu,$all){
         $output = DB::table('patronage_capital_allocation_details as pc')
                     ->select('m.id_member',DB::raw("FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as Name,if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name)) as groupings,if(m.id_baranggay_lgu is null,0,m.id_baranggay_lgu) as group_ref,
-                    pc.capital_share,pc.ave_monthly_cbu,pc.interest_capital_share,pc.loan_interest,pc.patronage_refund,pc.total,pc.w_cash,pc.w_cbu,if(pc.w_cash + pc.w_cbu =0,pc.total,pc.w_cash) as def_val"))
+                    pc.capital_share,pc.ave_monthly_cbu,pc.interest_capital_share,pc.loan_interest,pc.patronage_refund,pc.total,pc.w_cash,pc.w_cbu,pc.id_journal_voucher"))
                    ->leftJoin('member as m','m.id_member','pc.id_member')
-                   ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','m.id_baranggay_lgu')
+                   ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','pc.id_baranggay_lgu')
                    ->where('pc.id_patronage_capital_allocation',$id_patronage_capital_allocation);
         if(!$all){
             $output->where(function($query) use($id_brgy_lgu){
                         if($id_brgy_lgu > 0){
-                            $query->where('m.id_baranggay_lgu',$id_brgy_lgu);
+                            $query->where('pc.id_baranggay_lgu',$id_brgy_lgu);
                         }else{
-                             $query->whereNull('m.id_baranggay_lgu');
+                             $query->whereNull('pc.id_baranggay_lgu');
                         }
                    });
         }else{
-            $output->orderBy(DB::raw("if(m.id_baranggay_lgu is null,3,bl.type) "))
+            $output->orderBy(DB::raw("if(pc.id_baranggay_lgu is null,3,bl.type) "))
                     ->orderBy(DB::raw("concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) "));
         }
 
@@ -694,6 +764,21 @@ class PatronageRefundController extends Controller
         $pdf->setOption('header-font-name', 'Calibri');
 
         return $pdf->stream("{$data['file_name']}.pdf",array('Attachment'=>1));
+    }
+
+    public function GroupStatus(Request $request){
+        $id_patronage_capital_allocation = $request->id_patronage_capital_allocation;
+
+        $groups = DB::select("SELECT pcg.id_baranggay_lgu,CASE WHEN pcg.id_baranggay_lgu = 0 THEN 'Regular'
+        ELSE concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) END as groupings,
+        CASE WHEN pcg.status = 0 THEN 'DRAFT'
+        ELSE  'RELEASED' END as status_description,pcg.status as status_code
+        FROM patronage_capital_allocation_group as pcg
+        LEFT JOIN baranggay_lgu as bl on bl.id_baranggay_lgu = pcg.id_baranggay_lgu
+        WHERE pcg.id_patronage_capital_allocation = ?
+        ORDER BY pcg.id_patronage_capital_allocation_group;",[$id_patronage_capital_allocation]);
+
+        return response($groups);
     }
 
 

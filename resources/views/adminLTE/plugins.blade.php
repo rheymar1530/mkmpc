@@ -276,7 +276,7 @@
     })(window.jQuery);
 
     function roundoff(num, decimals) {
-        decimals = decimals ? ? 2;
+        decimals = decimals ?? 2;
 
         return Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
     }

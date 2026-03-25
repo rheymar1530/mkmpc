@@ -13,7 +13,7 @@ class JVModel extends Model
 
 
 
-        
+
         if(!isset($id_journal_voucher)){
             DB::select("INSERT INTO journal_voucher (date,type,description,id_member,payee,reference,status,total_amount,id_branch,address,payee_type,id_employee)
                         SELECT transaction_date,2 as type,concat('(ID#',id_repayment_Transaction,') REPAYMENT FOR LOAN ID(S) ',getRepaymentTransactionIDLoans(id_repayment_transaction),if(rt.transaction_type = 3,' (PAYROLL)','')) as description,
@@ -21,16 +21,16 @@ class JVModel extends Model
                         m.id_branch,m.address,2 as payee_type,if(rt.transaction_type = 3,m.id_employee,0)
                         FROM repayment_transaction as rt
                         LEFT JOIN member as m on m.id_member = rt.id_member
-                        where id_repayment_Transaction = ?;",[$id_repayment_transaction]);     
-            $id_journal_voucher = DB::table('journal_voucher')->where('reference',$id_repayment_transaction)->where('type',2)->max('id_journal_voucher');      
+                        where id_repayment_Transaction = ?;",[$id_repayment_transaction]);
+            $id_journal_voucher = DB::table('journal_voucher')->where('reference',$id_repayment_transaction)->where('type',2)->max('id_journal_voucher');
         }else{
             if($cancel){
 
                  DB::table('journal_voucher')
                  ->where('id_journal_voucher',$id_journal_voucher)
-                 ->update(['status'=>10,'description'=>DB::raw("concat(REPLACE(description,' [CANCELLED]',''),' [CANCELLED]')"),'date_cancelled'=>$d->date_cancelled,'cancellation_reason'=>$d->cancel_reason]);    
+                 ->update(['status'=>10,'description'=>DB::raw("concat(REPLACE(description,' [CANCELLED]',''),' [CANCELLED]')"),'date_cancelled'=>$d->date_cancelled,'cancellation_reason'=>$d->cancel_reason]);
 
-                return;            
+                return;
             }
             if($edited){
                  DB::table('journal_voucher')
@@ -77,24 +77,24 @@ class JVModel extends Model
                     LEFT JOIN account_code_maintenance as ac on ac.id_account_code_maintenance = 9
                     LEFT JOIN chart_account as ca on ca.id_chart_account = ac.id_chart_account
                     WHERE id_repayment_transaction = ?
-        
+
                     UNION ALL
                     /*************LOAN FEES**********************/
                     select $id_journal_voucher id_journal_voucher,ca.id_chart_account,ca.account_code as account_code,ca.description,0 as debit,paid_fees as credit ,
                     '' as remarks,rl.id_loan as reference
                     FROM repayment_loans as rl
                     LEFT JOIN account_code_maintenance as ac on ac.id_account_code_maintenance = 10
-                    LEFT JOIN chart_account as ca on ca.id_chart_account = ac.id_chart_account 
+                    LEFT JOIN chart_account as ca on ca.id_chart_account = ac.id_chart_account
                     WHERE id_repayment_transaction = ?
-                    
+
                     UNION ALL
                     /*************LOAN INTEREST**********************/
                     select $id_journal_voucher id_journal_voucher,ca.id_chart_account,ca.account_code as account_code,ca.description,0 as debit,paid_interest as credit ,
                     '' as remarks,rl.id_loan as reference
                     FROM repayment_loans as rl
                     LEFT JOIN account_code_maintenance as ac on ac.id_account_code_maintenance =6
-                    LEFT JOIN chart_account as ca on ca.id_chart_account = ac.id_chart_account 
-                    WHERE id_repayment_transaction = ?) 
+                    LEFT JOIN chart_account as ca on ca.id_chart_account = ac.id_chart_account
+                    WHERE id_repayment_transaction = ?)
                     as rep_loan
                     LEFT JOIN loan as l on rep_loan.reference = l.id_loan
                     LEFT JOIN loan_service as ls on ls.id_loan_service = l.id_loan_service
@@ -105,14 +105,14 @@ class JVModel extends Model
                     select $id_journal_voucher id_journal_voucher,ca.id_chart_account,ca.account_code as account_code,ca.description,0 as debit,rf.amount as credit ,
                     pt.description as remarks,id_repayment_transaction as reference FROM repayment_fees as rf
                     LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = rf.id_payment_type
-                    LEFT JOIN chart_account as ca on ca.id_chart_account = pt.id_chart_account 
+                    LEFT JOIN chart_account as ca on ca.id_chart_account = pt.id_chart_account
                     WHERE id_Repayment_transaction =? and amount > 0
                     UNION ALL
                     /*************PENALTY**********************/
                     select $id_journal_voucher id_journal_voucher,ca.id_chart_account,ca.account_code as account_code,ca.description,0 as debit,rp.amount as credit ,
                     pt.description as remarks,id_repayment_transaction as reference FROM repayment_penalty as rp
                     LEFT JOIN tbl_payment_type as pt on pt.id_payment_type = rp.id_payment_type
-                    LEFT JOIN chart_account as ca on ca.id_chart_account = pt.id_chart_account 
+                    LEFT JOIN chart_account as ca on ca.id_chart_account = pt.id_chart_account
                     WHERE id_Repayment_transaction =? AND rp.amount > 0
                     UNION ALL
                     /*************SURCHARGES**********************/
@@ -125,7 +125,7 @@ class JVModel extends Model
                     LEFT JOIN loan_service as ls on ls.id_loan_service = loan.id_loan_service
                     WHERE rls.id_repayment_transaction = ?
                     UNION ALL
-                    /*****CHANGE*****/ 
+                    /*****CHANGE*****/
                     select $id_journal_voucher id_journal_voucher,ca.id_chart_account,ca.account_code as account_code,ca.description,0 as debit,`change` as credit,
                     '' as remarks,id_repayment_transaction as reference
                     FROM repayment_transaction as rt
@@ -162,8 +162,8 @@ class JVModel extends Model
             if($cancel){
                DB::table('journal_voucher')
                ->where('id_journal_voucher',$id_journal_voucher)
-               ->update(['description'=>DB::raw("concat(REPLACE(description,' [CANCELLED]',''),' [CANCELLED]')"),'status'=>10]);    
-               return;            
+               ->update(['description'=>DB::raw("concat(REPLACE(description,' [CANCELLED]',''),' [CANCELLED]')"),'status'=>10]);
+               return;
             }
             if($edited){
                 DB::select("UPDATE repayment_change as rc
@@ -179,14 +179,14 @@ class JVModel extends Model
         }
 
         DB::select("insert INTO journal_voucher_details (id_journal_voucher,id_chart_account,account_code,description,debit,credit,details,reference)
-                    SELECT 
+                    SELECT
                     $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code as account_code,ca.description,amount as debit,0 as credit,
                     'Change from repayment' as remarks,id_repayment_change as reference
                     FROm repayment_change
                     LEFT JOIN chart_account as ca on ca.id_chart_account = 23
                     WHERE id_repayment_change = ?
                     UNION ALL
-                    SELECT 
+                    SELECT
                     $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code as account_code,ca.description,0 as debit,amount as credit,
                     'Change release' as remarks,id_repayment_change as reference
                     FROm repayment_change
@@ -225,24 +225,24 @@ class JVModel extends Model
 
         // SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,SUM(accumulated_depreciation*adi.quantity) as debit,0 credit,'' as details,id_asset_disposal as reference
         // FROM asset_disposal_item as adi
-        // LEFT JOIN asset_item as ai on ai.asset_code = adi.asset_code 
+        // LEFT JOIN asset_item as ai on ai.asset_code = adi.asset_code
         // LEFT JOIN chart_account as ca on ca.id_chart_account =if(ai.id_chart_account=9,10,11)
         // WHERE adi.id_asset_disposal = $id_asset_disposal
         //Insert CHILD
         DB::select("INSERT INTO journal_voucher_details (id_journal_voucher,id_chart_account,account_code,description,debit,credit,details,reference)
                     select $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,amount_received as debit,0 credit,'' as details,id_asset_disposal as reference
-                    FROM asset_disposal 
+                    FROM asset_disposal
                     LEFT JOIN chart_account as ca on ca.id_chart_account =40
                     where id_asset_disposal =$id_asset_disposal and amount_received > 0
                     UNION ALL
                     select $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,abs(loss_gain_amount) as debit,0 credit,'' as details,id_asset_disposal as reference
-                    FROM asset_disposal 
+                    FROM asset_disposal
                     LEFT JOIN chart_account as ca on ca.id_chart_account =75
                     where id_asset_disposal =$id_asset_disposal and loss_gain_amount < 0
                     UNION ALL
                     SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,SUM(accumulated_depreciation*adi.quantity) as debit,0 credit,'' as details,id_asset_disposal as reference
                     FROM asset_disposal_item as adi
-                    LEFT JOIN asset_item as ai on ai.asset_code = adi.asset_code 
+                    LEFT JOIN asset_item as ai on ai.asset_code = adi.asset_code
                     LEFT JOIN chart_account as cd on cd.id_chart_account = ai.id_chart_account
                     LEFT JOIN chart_account as ca on ca.id_chart_account = cd.ac_depreciation_account
                     WHERE adi.id_asset_disposal = $id_asset_disposal
@@ -254,7 +254,7 @@ class JVModel extends Model
                     WHERE adi.id_asset_disposal =$id_asset_disposal
                     UNION ALL
                     select $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,0 as debit,abs(loss_gain_amount) as credit,'' as details,id_asset_disposal as reference
-                    FROM asset_disposal 
+                    FROM asset_disposal
                     LEFT JOIN chart_account as ca on ca.id_chart_account =41
                     where id_asset_disposal =$id_asset_disposal and loss_gain_amount > 0;");
 
@@ -334,7 +334,7 @@ class JVModel extends Model
                 DB::select("INSERT INTO journal_voucher (date,type,description,id_member,payee,reference,status,total_amount,id_branch,address,payee_type)
                 SELECT p.period_start as date,7 as type,concat('PAYROLL ID# ',p.id_payroll,' FOR PERIOD OF ',DATE_FORMAT(p.period_start,'%m/%d/%Y'),' - ',DATE_FORMAT(p.period_end,'%m/%d/%Y'),if(p.id_payroll_mode=3,concat(' (',p.no_days,' Days)'),''))  as description,0 as id_member,'SMESTCCO' as payee,p.id_payroll as reference,0 as status,
                 SUM(net_income) as total_amount,1 as branch,'' as address, 4 as payee_type
-                FROM payroll as p 
+                FROM payroll as p
                 LEFT JOIN payroll_employee as pe on pe.id_payroll = p.id_payroll
                 where p.id_payroll = ?;",[$id_payroll]);
 
@@ -344,7 +344,7 @@ class JVModel extends Model
             }else{
                 DB::select("UPDATE payroll as p
                             LEFT JOIN journal_voucher as jv on jv.id_journal_voucher =p.id_journal_voucher
-                            INNER JOIN 
+                            INNER JOIN
                             (SELECT pe.id_payroll,SUM(net_income) as net_income
                             FROM payroll_employee as pe
                             WHERE pe.id_payroll=$id_payroll) t
@@ -357,10 +357,10 @@ class JVModel extends Model
                 ->delete();
             }
             DB::select("
-            INSERT INTO journal_voucher_details (id_journal_voucher,id_chart_account,account_code,description,debit,credit,details,reference)   
+            INSERT INTO journal_voucher_details (id_journal_voucher,id_chart_account,account_code,description,debit,credit,details,reference)
             SELECT  $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,
             SUM(basic_pay+ot+night_shift_dif+holiday+paid_leaves+salary_adjustment+13th_month+others) as debit,0 as credit,'' as details,pe.id_payroll as reference
-            FROM payroll_employee as pe 
+            FROM payroll_employee as pe
             LEFT JOIN employee as em on em.id_employee = pe.id_employee
             LEFT JOIN chart_account as ca on ca.id_chart_account = if(em.id_employee_type = 1,45,44)
             where pe.id_payroll =  $id_payroll
@@ -368,42 +368,42 @@ class JVModel extends Model
             UNION ALL
             SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,
             SUM(total_allowance) as debit,0 as credit,'' as details,pe.id_payroll
-            FROM payroll_employee as pe 
+            FROM payroll_employee as pe
             LEFT JOIN chart_account as ca on ca.id_chart_account = 46
             where pe.id_payroll = $id_payroll
             HAVING SUM(total_allowance) > 0
             UNION ALL
             SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,
             0 as debit,SUM(sss+philhealth+hdmf+insurance+sss_loan+hdmf_loan) as credit,'' as details,pe.id_payroll
-            FROM payroll_employee as pe 
+            FROM payroll_employee as pe
             LEFT JOIN chart_account as ca on ca.id_chart_account = 27
-            where pe.id_payroll = $id_payroll 
+            where pe.id_payroll = $id_payroll
             HAVING SUM(sss+philhealth+hdmf+insurance+sss_loan+hdmf_loan) > 0
             UNION ALL
             SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,
             0 as debit,SUM(ca) as credit,'' as details,pe.id_payroll
-            FROM payroll_employee as pe 
+            FROM payroll_employee as pe
             LEFT JOIN chart_account as ca on ca.id_chart_account = 7
-            where pe.id_payroll = $id_payroll 
+            where pe.id_payroll = $id_payroll
             HAVING SUM(ca) > 0
             UNION ALL
             SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,
             0 as debit,SUM(absences+late) as credit,'' as details,pe.id_payroll
-            FROM payroll_employee as pe 
+            FROM payroll_employee as pe
             LEFT JOIN chart_account as ca on ca.id_chart_account = 45
             where pe.id_payroll = $id_payroll
             HAVING SUM(absences+late) > 0
             UNION ALL
             SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,
             0 as debit,SUM(wt) as credit,'' as details,pe.id_payroll
-            FROM payroll_employee as pe 
+            FROM payroll_employee as pe
             LEFT JOIN chart_account as ca on ca.id_chart_account = 26
             where pe.id_payroll = $id_payroll
             HAVING SUM(wt) > 0
             UNION ALL
             SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,
             0 as debit,SUM(net_income) as credit,'' as details,pe.id_payroll
-            FROM payroll_employee as pe 
+            FROM payroll_employee as pe
             LEFT JOIN payroll as p on p.id_payroll = pe.id_payroll
             LEFT JOIN tbl_bank as tb on tb.id_bank = p.id_bank
             LEFT JOIN chart_account as ca on ca.id_chart_account = if(p.id_bank=0,1,tb.id_chart_account)
@@ -442,7 +442,7 @@ class JVModel extends Model
 
         }else{
 
-            DB::select("UPDATE atm_swipe as atm     
+            DB::select("UPDATE atm_swipe as atm
                         LEFT JOIN journal_voucher as jv on jv.id_journal_voucher = atm.id_journal_voucher
                         LEFT JOIN member as m on m.id_member = if(atm.client_type=2,atm.id_member,0)
                         LEFT JOIN employee as e on e.id_employee = if(atm.client_type=3,atm.id_employee,0)
@@ -502,7 +502,7 @@ class JVModel extends Model
             FROM investment as i
             LEFT JOIN member as m on m.id_member= i.id_member
             LEFT JOIN investment_product as ip on ip.id_investment_product = i.id_investment_product
-            WHERE i.id_investment=?;",[$id_investment]);  
+            WHERE i.id_investment=?;",[$id_investment]);
 
             $id_journal_voucher = DB::table('journal_voucher')->where('type',10)->where('reference',$id_investment)->max('id_journal_voucher');
             DB::table('investment')->where('id_investment',$id_investment)->update(['id_journal_voucher'=>$id_journal_voucher]);
@@ -513,21 +513,21 @@ class JVModel extends Model
                         LEFT JOIN journal_voucher as jv on jv.id_journal_voucher = i.id_journal_voucher
                         SET jv.date = i.investment_date,jv.description = concat('Investment - Renewal of ',ip.product_name, ' (ID#',id_prev_investment,') new investment ID#',i.id_investment),jv.payee=FormatName(m.first_name,m.middle_name,m.last_name,m.suffix),
                         jv.total_amount = i.amount,jv.id_branch = m.id_branch,jv.address = m.address
-                        WHERE i.id_investment = ? and i.status = 2;",[$id_investment]); 
+                        WHERE i.id_investment = ? and i.status = 2;",[$id_investment]);
 
             DB::table('journal_voucher_details')
             ->where('id_journal_voucher',$id_journal_voucher)
             ->delete();
         }
         DB::select("INSERT INTO journal_voucher_details (id_journal_voucher,id_chart_account,account_code,description,debit,credit,details,reference)
-        SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,ir.principal as debit,0 as credit,concat('INVESTMENT ID #',ir.id_investment_prev,' Principal [Renewal]') as details,ir.id_investment_prev 
+        SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,ir.principal as debit,0 as credit,concat('INVESTMENT ID #',ir.id_investment_prev,' Principal [Renewal]') as details,ir.id_investment_prev
         FROM investment_renewal as ir
         LEFT JOIN investment as i on i.id_investment = ir.id_investment_new
         LEFT JOIn investment_product as ip on ip.id_investment_product = i.id_investment_product
         LEFT JOIN chart_account as ca on ca.id_chart_account = ip.id_chart_account
         where ir.id_investment_new =? and ir.principal > 0
         UNION ALL
-        SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,ir.interest as debit,0 as credit,concat('INVESTMENT ID #',ir.id_investment_prev,' Interest [Renewal]') as details,ir.id_investment_prev 
+        SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,ir.interest as debit,0 as credit,concat('INVESTMENT ID #',ir.id_investment_prev,' Interest [Renewal]') as details,ir.id_investment_prev
         FROM investment_renewal as ir
         LEFT JOIN investment as i on i.id_investment = ir.id_investment_new
         LEFT JOIn investment_product as ip on ip.id_investment_product = i.id_investment_product
@@ -543,12 +543,100 @@ class JVModel extends Model
         ;",[$id_investment,$id_investment,$id_investment]);
 
         self::setIsCash($id_journal_voucher);
+    }
+
+    public static function PRAllocation($id_patronage_capital_allocation,$id_member){
+
+        $id_journal_voucher = DB::table('patronage_capital_allocation_details')
+                            ->select('id_journal_voucher')
+                            ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+                            ->where('id_member',$id_member)
+                            ->first()->id_journal_voucher ?? 0;
+
+        if($id_journal_voucher == 0){
+            DB::statement("
+                INSERT INTO journal_voucher
+                (date,type,description,id_member,payee,reference,status,total_amount,id_branch,address,payee_type)
+                SELECT
+                    '2026-07-03',
+                    12,
+                    CONCAT('INTEREST ON CAPITAL SHARE AND PATRONAGE REFUND ALLOCATION FOR THE YEAR ', pca.year),
+                    pcd.id_member
+                    ,FormatName(m.first_name,m.middle_name,m.last_name,m.suffix)  as payee,
+                    pcd.id_patronage_capital_allocation,
+                    0,
+                    pcd.total,
+                    m.id_branch,
+                    m.address,
+                    2
+                FROM patronage_capital_allocation_details as pcd
+                LEFT JOIN member as m on m.id_member = pcd.id_member
+                LEFT JOIN patronage_capital_allocation as pca
+                    on pca.id_patronage_capital_allocation = pcd.id_patronage_capital_allocation
+                WHERE pcd.id_patronage_capital_allocation = ?
+                AND pcd.id_member = ?
+            ", [$id_patronage_capital_allocation, $id_member]);
+            $id_journal_voucher = DB::getPdo()->lastInsertId();
+        }else{
+            DB::statement("
+            UPDATE journal_voucher jv
+            LEFT JOIN patronage_capital_allocation_details pcd
+                ON pcd.id_journal_voucher = jv.id_journal_voucher
+            LEFT JOIN member m
+                ON m.id_member = pcd.id_member
+            LEFT JOIN patronage_capital_allocation pca
+                ON pca.id_patronage_capital_allocation = pcd.id_patronage_capital_allocation
+
+            SET
+                jv.date = '2026-07-03',
+                jv.type = 12,
+                jv.description = CONCAT('INTEREST ON CAPITAL SHARE AND PATRONAGE REFUND ALLOCATION FOR THE YEAR ', pca.year),
+                jv.payee = FormatName(m.first_name,m.middle_name,m.last_name,m.suffix),
+                jv.total_amount = pcd.total,
+                jv.id_branch = m.id_branch,
+                jv.address = m.address,
+                jv.payee_type = 2
+
+            WHERE jv.id_journal_voucher = ?
+            ", [$id_journal_voucher]);
+
+            DB::table('journal_voucher_details')
+            ->where('id_journal_voucher',$id_journal_voucher)
+            ->delete();
+        }
 
 
 
 
+        DB::select("
+        INSERT INTO journal_voucher_details (id_journal_voucher,id_chart_account,account_code,description,debit,credit,details,reference)
+        SELECT  $id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,interest_capital_share as debit,0 as credit,'' as details,pcad.id_patronage_capital_allocation_details
+        FROM patronage_capital_allocation_details as pcad
+        LEFT JOIN chart_account as ca on ca.id_chart_account = 19
+        WHERE pcad.id_patronage_capital_allocation = ? AND id_member = ? AND interest_capital_share > 0
+        UNION ALL
+        SELECT  $id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,patronage_refund as debit,0 as credit,'' as details,pcad.id_patronage_capital_allocation_details
+        FROM patronage_capital_allocation_details as pcad
+        LEFT JOIN chart_account as ca on ca.id_chart_account = 20
+        WHERE pcad.id_patronage_capital_allocation = ? AND id_member = ? AND patronage_refund > 0
+        UNION ALL
+        SELECT  $id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,0 as debit,w_cbu as credit,'' as details,pcad.id_patronage_capital_allocation_details
+        FROM patronage_capital_allocation_details as pcad
+        LEFT JOIN chart_account as ca on ca.id_chart_account = 28
+        WHERE pcad.id_patronage_capital_allocation = ? AND id_member = ? AND w_cbu > 0
+        UNION ALL
+        SELECT  $id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,0 as debit,w_cash as credit,'' as details,pcad.id_patronage_capital_allocation_details
+        FROM patronage_capital_allocation_details as pcad
+        LEFT JOIN chart_account as ca on ca.id_chart_account = 1
+        WHERE pcad.id_patronage_capital_allocation = ? AND id_member = ? AND w_cash > 0;",[$id_patronage_capital_allocation,$id_member,$id_patronage_capital_allocation,$id_member,$id_patronage_capital_allocation,$id_member,$id_patronage_capital_allocation,$id_member]);
+
+        DB::table('patronage_capital_allocation_details')
+        ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+        ->where('id_member',$id_member)
+        ->update(['id_journal_voucher'=>$id_journal_voucher]);
 
 
+        self::setIsCash($id_journal_voucher);
     }
     public static function setIsCash($id_journal_voucher){
         DB::table('journal_voucher')
@@ -558,7 +646,7 @@ class JVModel extends Model
 }
 // SELECT $id_journal_voucher as id_journal_voucher,ca.id_chart_account,ca.account_code,ca.description,
 //             0 as debit,SUM(net_income) as credit,'' as details,pe.id_payroll
-//             FROM payroll_employee as pe 
+//             FROM payroll_employee as pe
 //             LEFT JOIN employee as em on em.id_employee = pe.id_employee
 //             LEFT JOIN tbl_bank as tb on tb.id_bank = em.id_bank
 //             LEFT JOIN chart_account as ca on ca.id_chart_account = if(em.id_bank=0,1,tb.id_chart_account)

@@ -86,6 +86,9 @@
                                 <button class="btn btn-sm bg-gradient-success float-right"
                                     onclick="print_page('/patronage-refund/print/{{ $details->id_patronage_capital_allocation }}')">Print
                                     Allocation</button>
+                                 <button class="btn btn-sm bg-gradient-danger float-right mr-3" id="btnAllocationStatus">Allocation Status</button>
+
+
                             </div>
                         </div>
                     </div>
@@ -110,11 +113,13 @@
                             <th>TSM</th>
                             <th>ASM</th>
                             <th>ISC</th>
-                            <th>Interest on Loan</th>
+                            <th>INTEREST ON LOAN</th>
                             <th>PR</th>
-                            <th>Total</th>
-                            <th>CBU Retention</th>
-                            <th>To be Released</th>
+                            <th>TOTAL</th>
+                            <th>NET</th>
+                            <th>CBU</th>
+                            <th></th>
+
 
                         </tr>
                     </thead>
@@ -128,7 +133,7 @@
                 </table>
             </div>
             <div class="card-footer">
-                <div class="dropdown float-right ">
+                <!-- <div class="dropdown float-right ">
                     <a class="btn btn-primary dropdown-toggle btn-md" href="#" role="button" data-toggle="dropdown"
                         aria-expanded="false">
                         Update Status
@@ -139,14 +144,15 @@
                         <a class="dropdown-item" onclick="CancelAllocation()">Cancel</a>
 
                     </div>
-                </div>
-                <button class="btn btn-md float-right bg-gradient-success" id="btn-post">Save</button>
+                </div> -->
+                <button class="btn btn-md float-right bg-gradient-success" id="btn-post">Allocation Released</button>
             </div>
         </div>
     </div>
 </div>
 @include('global.print_modal')
 @include('patronage_refunds.confirm-allocation')
+@include('patronage_refunds.group-modal')
 @endsection
 
 @push('scripts')
@@ -203,10 +209,12 @@
             let total_loan_interest = 0;
             let total_patronage_refund = 0;
             let total_total = 0;
-            let total_def_val = 0;
+            let total_w_cash = 0;
             let total_w_cbu = 0;
 
             let out = '';
+
+
             $.each(allocations, function (i, item) {
                 total_capital_share += parseFloat(item.capital_share) || 0;
                 total_ave_monthly_cbu += parseFloat(item.ave_monthly_cbu) || 0;
@@ -214,23 +222,26 @@
                 total_loan_interest += parseFloat(item.loan_interest) || 0;
                 total_patronage_refund += parseFloat(item.patronage_refund) || 0;
                 total_total += parseFloat(item.total) || 0;
-                total_def_val += parseFloat(item.def_val) || 0;
+                total_w_cash += parseFloat(item.w_cash) || 0;
                 total_w_cbu += parseFloat(item.w_cbu) || 0;
 
-                out += `<tr class="row-member" data-id-member="${item.id_member}">`;
+                out += `<tr class="row-member" data-id-member="${item.id_member}" data-jv="${item.id_journal_voucher}">`;
                 out += `<td class="text-center">${i+1}</td>`;
                 out += `<td>${item.Name}</td>`;
                 out += `<td class="text-right">${number_format(item.capital_share,2)}</td>`;
                 out += `<td class="text-right">${number_format(item.ave_monthly_cbu,2)}</td>`;
-                out += `<td class="text-right">${number_format(item.interest_capital_share,2)}</td>`;
+                out += `<td class="text-right b">${number_format(item.interest_capital_share,2)}</td>`;
                 out += `<td class="text-right">${number_format(item.loan_interest,2)}</td>`;
-                out += `<td class="text-right">${number_format(item.patronage_refund,2)}</td>`;
-                out += `<td class="text-right">${number_format(item.total,2)}</td>`;
-
+                out += `<td class="text-right b">${number_format(item.patronage_refund,2)}</td>`;
+                out += `<td class="text-right b">${number_format(item.total,2)}</td>`;
+                out +=
+                    `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cash ff" name="cash" value="${number_format(item.w_cash,2)}"></td>`;
                 out +=
                     `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cbu ff" name="cbu" value="${number_format(item.w_cbu,2)}"></td>`;
-                 out +=
-                    `<td class="text-right p-0"><input type="text" class="form-control w-100 class_amount text-right text-cash ff" name="cash" value="${number_format(item.def_val,2)}"></td>`;
+                if(item.id_journal_voucher > 0){
+                    out += `<td><a class="btn btn-xs bg-gradient-primary btn-print-jv">JV# ${item.id_journal_voucher}</a></td>`;
+                }
+
                 out += `</tr>`;
             });
             $('#body-allocation').html(out);
@@ -244,8 +255,9 @@
             grand += `<td class="text-right">${number_format(total_loan_interest,2)}</td>`;
             grand += `<td class="text-right">${number_format(total_patronage_refund,2)}</td>`;
             grand += `<td class="text-right">${number_format(total_total,2)}</td>`;
+            grand += `<td class="text-right pr-3" id="total-cash">${number_format(total_w_cash,2)}</td>`;
             grand += `<td class="text-right pr-3" id="total-cbu">${number_format(total_w_cbu,2)}</td>`;
-            grand += `<td class="text-right pr-3" id="total-cash">${number_format(total_def_val,2)}</td>`;
+            grand += `<td></td>`;
 
             grand += `</tr>`;
 
@@ -283,7 +295,19 @@
         });
 
         $('#btn-post').on('click', () => {
+            Swal.fire({
+                title: 'Do you want to save this?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: `Save`
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    postAllocation()
+                }
+            })
+        });
 
+        const postAllocation = () =>{
             const allocation = $('.row-member').map(function () {
                 const temp = {};
                 temp['id_member'] = $(this).attr('data-id-member');
@@ -295,7 +319,8 @@
 
             const ajaxParam = {
                 'allocations': allocation,
-                'id_patronage_capital_allocation': ID_PATRONAGE_CAPITAL_ALLOCATION
+                'id_patronage_capital_allocation': ID_PATRONAGE_CAPITAL_ALLOCATION,
+                'id_baranggay_lgu' : $('#sel-groupings').val()
             };
 
 
@@ -323,6 +348,7 @@
                         }).then(() => {
 
                         });
+                        $('#sel-groupings').val($('#sel-groupings').val()).trigger('change');
                     } else if (response.RESPONSE_CODE == "ERROR") {
                         const InvalidRows = response.invalidRows;
                         Swal.fire({
@@ -359,10 +385,11 @@
             console.log({
                 ajaxParam
             });
+        }
 
-
-
-        });
-
+        $(document).on('click','.btn-print-jv',function(){
+            let id_journal_voucher = $(this).closest('tr.row-member').attr('data-jv');
+            print_page(`/journal_voucher/print/${id_journal_voucher}`);
+        })
     </script>
 @endpush
