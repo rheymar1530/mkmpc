@@ -620,7 +620,7 @@ class PatronageRefundController extends Controller
                     if($id_baranggay_lgu > 0){
                         $q->where('id_baranggay_lgu',$id_baranggay_lgu);
                     }else{
-                        $q->whereNull('id_baranggay_lgu');
+                        $q->where('id_baranggay_lgu',$id_baranggay_lgu);
                     }
                 })
 
