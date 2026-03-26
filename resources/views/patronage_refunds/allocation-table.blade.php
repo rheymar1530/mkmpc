@@ -90,6 +90,9 @@
             <td>{{ number_format($gTotals['InterestTotal'] ?? 0,2) }}</td>
             <td>{{ number_format($gTotals['PR'] ?? 0,2) }}</td>
             <td>{{ number_format($gTotals['TotalPayables'] ?? 0,2) }}</td>
+            <td></td>
+            <td>{{ number_format($gTotals['Net'] ?? 0,2) }}</td>
+            <td>{{ number_format($gTotals['CBU_Retention'] ?? 0,2) }}</td>
         </tr>
     </tfoot>
 </table>

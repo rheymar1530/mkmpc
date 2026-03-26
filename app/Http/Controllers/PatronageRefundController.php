@@ -38,9 +38,6 @@ class PatronageRefundController extends Controller
         // $this->recurssion();
         // return;
 
-
-
-
         $data['credential']= CredentialModel::GetCredential(MySession::myPrivilegeId());
         $data['head_title'] = "Patronage Allocation";
 
@@ -60,13 +57,15 @@ class PatronageRefundController extends Controller
 
         $data['current_date'] = MySession::current_date();
 
-
         return view('patronage_refunds.index',$data);
 
         return $data;
     }
 
     public function create(Request $request){
+        $export = $request->export ?? 0;
+
+
         $data['sidebar']="sidebar-collapse";
 
         $data['sel_year'] = $year = $request->year ?? MySession::current_year();
@@ -75,20 +74,45 @@ class PatronageRefundController extends Controller
 
         $data['DefAllocation'] = $this->DefAllocation;
 
-
-
-
         $mem_allocation = $this->CompileAllocationData($year,$ICP,$PR);
-
         $data = [...$data,...$mem_allocation ];
 
+        $totalKeys = ['CBUTotal','AverageCBU','ICS','InterestTotal','PR','TotalPayables','Net','CBU_Retention'];
+        $t = [];
+        foreach($data['MemberFinalData'] as $k){
+            foreach($totalKeys as $key){
+                $am = collect($k)->sum($key);
+                $t[$key] = ($t[$key] ?? 0) + $am;
+            }
+        }
 
-        // foreach($mem_allocation as $m){}
+        $data['totals'] = $t;
 
+        // dd($data);
+        if($export == 1){
+            $data['file_name'] = "ISC AND PR YEAR {$data['sel_year']}";
+            $html = view('patronage_refunds.export-create',$data);
+
+            $pdf = PDF::loadHtml($html);
+            $pdf->setOption("encoding","UTF-8");
+            $pdf->setOption('margin-bottom', '0.33in');
+            $pdf->setOption('margin-top', '0.33in');
+            $pdf->setOption('margin-right', '0.33in');
+            $pdf->setOption('margin-left', '0.42in');
+            $pdf->setOption('header-left', 'Page [page] of [toPage]');
+            $pdf->setOrientation('landscape');
+            // $pdf->setOption('header-right', 'No.: '.$data['details']->month_year.'-'.$data['details']->id_repayment_statement);
+
+            $pdf->setOption('header-font-size', 8);
+            $pdf->setOption('header-font-name', 'Calibri');
+
+            return $pdf->stream("{$data['file_name']}.pdf",array('Attachment'=>1));
+        }
 
         return view('patronage_refunds.create',$data);
 
     }
+
     public function CompileAllocationData(int $year,$ICP,$PR){
 
         // transactions months
@@ -144,6 +168,7 @@ class PatronageRefundController extends Controller
                         ->orderBy(DB::raw("concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) "))
                         ->orderBy('Name')
                         ->get();
+
         $MemberLists = $g->array_group_by($MemberLists,['dataGroupings']);
 
         // $ISCRate =  ($TotalCBU > 0) ? ($ICP/($TotalCBU/$MonthCount)) : 0;
@@ -280,24 +305,42 @@ class PatronageRefundController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | STEP 5 — DISTRIBUTE PR ROUNDING (SLOW)
+        | STEP 5 — DISTRIBUTE PR ROUNDING (NO REORDER)
         |--------------------------------------------------------------------------
         */
+        if ($memberCount > 0 && $PRdiffCents != 0) {
 
-        $i = 0;
+            // Build index list
+            $indexes = array_keys($AllMembers);
 
-        while ($PRdiffCents != 0 && $memberCount > 0) {
+            // Sort indexes based on remainder (NOT the actual array)
+            usort($indexes, function ($i, $j) use ($AllMembers, $PRdiffCents) {
 
-            if ($PRdiffCents > 0) {
-                $AllMembers[$i]['PR'] += 0.01;
-                $PRdiffCents--;
-            } else {
-                $AllMembers[$i]['PR'] -= 0.01;
-                $PRdiffCents++;
+                $ra = $AllMembers[$i]['PR_raw'] - floor($AllMembers[$i]['PR_raw'] * 100) / 100;
+                $rb = $AllMembers[$j]['PR_raw'] - floor($AllMembers[$j]['PR_raw'] * 100) / 100;
+
+                return ($PRdiffCents > 0)
+                    ? $rb <=> $ra   // highest remainder first
+                    : $ra <=> $rb;  // lowest remainder first
+            });
+
+            $remaining = abs($PRdiffCents);
+
+            foreach ($indexes as $idx) {
+
+                if ($remaining <= 0) break;
+
+                if ($PRdiffCents > 0) {
+                    $AllMembers[$idx]['PR'] += 0.01;
+                    $remaining--;
+
+                } else {
+                    if ($AllMembers[$idx]['PR'] >= 0.01) {
+                        $AllMembers[$idx]['PR'] -= 0.01;
+                        $remaining--;
+                    }
+                }
             }
-
-            $i++;
-            if ($i >= $memberCount) $i = 0;
         }
 
         /*
@@ -333,23 +376,17 @@ class PatronageRefundController extends Controller
                 'NetRate' => $rate*100,
                 'Net'=>$net,
                 'CBU_Retention'=>$cbu_retention
-
-
             ];
 
             $output['ave_CBU'] += $m['AverageCBU'];
             $output['total_Interest'] += $m['InterestTotal'];
-
         }
-
 
         $output['MemberFinalData'] = $MemberFinalData;
         $output['ISCRate']= $ISCRate;
         $output['PRRate'] = $PRRate;
 
-
         return $output;
-
     }
     public function MemberInterests($start_month, $end_month,$year){
         $intCon = new PaidInterestSummaryController();
@@ -361,12 +398,6 @@ class PatronageRefundController extends Controller
     public function MembersCBU(string $StartDate,string $EndDate,string $TransactionDateString,string $monthSum){
         $cbuCon = new CBUController();
         $CBUSQL = $cbuCon->CBUMonthlyQueryBase(1);
-
-
-
-        // dd($TransactionDateString);
-
-
 
         $sql =" with cbu as (
                 SELECT FormatName(m.first_name,m.middle_name,m.last_name,m.suffix) as Name,m.id_member,$TransactionDateString FROM (
@@ -458,7 +489,6 @@ class PatronageRefundController extends Controller
 
     public function post(Request $request){
 
-
         $year = $request->year ?? MySession::current_year();
 
         $year = 2025;
@@ -468,8 +498,6 @@ class PatronageRefundController extends Controller
         $default_allocation = $request->default_allocation ?? 0;
         // dd($request->all())
         $def_key = $this->DefAllocation[$default_allocation]['key'];
-
-
 
         $m = $this->CompileAllocationData($year,$ICP,$PR);
 
@@ -533,7 +561,7 @@ class PatronageRefundController extends Controller
 
             DB::select("UPDATE patronage_capital_allocation_details as pcad
             LEFT JOIN member as m on m.id_member = pcad.id_member
-            SET pcad.id_baranggay_lgu = m.id_baranggay_lgu
+            SET pcad.id_baranggay_lgu = ifnull(m.id_baranggay_lgu,0)
             WHERE pcad.id_patronage_capital_allocation = ?",[$id_patronage_capital_allocation]);
 
             DB::commit();
@@ -566,6 +594,8 @@ class PatronageRefundController extends Controller
             $allocations = $request->allocations ?? [];
             $id_baranggay_lgu = $request->id_baranggay_lgu;
             $id_patronage_capital_allocation = $request->id_patronage_capital_allocation;
+            $release_remarks = $request->release_remarks ?? '';
+            $date_released = $request->date_released;
 
             $idMembers = collect($allocations)->pluck('id_member')->toArray();
 
@@ -616,39 +646,27 @@ class PatronageRefundController extends Controller
 
                 DB::table('patronage_capital_allocation_group')
                 ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
-                ->where(function($q) use($id_baranggay_lgu){
-                    if($id_baranggay_lgu > 0){
-                        $q->where('id_baranggay_lgu',$id_baranggay_lgu);
-                    }else{
-                        $q->where('id_baranggay_lgu',$id_baranggay_lgu);
-                    }
-                })
-
-                ->update(['status'=>1]);
+                ->where('id_baranggay_lgu',$id_baranggay_lgu)
+                ->update([
+                    'date_released'=> $date_released,
+                    'release_remarks'=>$release_remarks,
+                    'status'=>1
+                ]);
 
                 $t = DB::table('patronage_capital_allocation_details')
                 ->select('id_member')
                 ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
-                ->where(function($q) use($id_baranggay_lgu){
-                    if($id_baranggay_lgu > 0){
-                        $q->where('id_baranggay_lgu',$id_baranggay_lgu);
-                    }else{
-                        $q->whereNull('id_baranggay_lgu');
-                    }
-                })
+                ->where('id_baranggay_lgu',$id_baranggay_lgu)
                 ->get();
+
 
                 foreach($t as $d){
                     JVModel::PRAllocation($id_patronage_capital_allocation,$d->id_member);
                 }
 
-
                 DB::commit();
 
                 return response(['RESPONSE_CODE'=>"SUCCESS","message"=>"Allocation Successfully Posted"]);
-
-
-
             }catch(QueryException $e){
                 \Log::error($e->getMessage());
                 DB::rollback();
@@ -658,9 +676,6 @@ class PatronageRefundController extends Controller
                 \Log::error($e->getMessage());
                 DB::rollback();
             }
-
-
-
         }
     }
 
@@ -671,24 +686,30 @@ class PatronageRefundController extends Controller
                             ->first();
 
 
-        $groupings = $data['Groups'] = DB::table('patronage_capital_allocation_details as pra')
-                        ->select(DB::raw("if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name)) as groupings,if(m.id_baranggay_lgu is null,0,m.id_baranggay_lgu) as group_ref"))
-                        ->leftJoin('member as m','m.id_member','pra.id_member')
-                        ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','pra.id_baranggay_lgu')
-                        ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
-                        ->orderBy(DB::raw("if(m.id_baranggay_lgu is null,3,bl.type) "))
-                        ->orderBy(DB::raw("concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) "))
-                        ->groupBy(DB::raw("if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name))"))
-                        ->get();
+        $groupings = $data['Groups'] = DB::table('patronage_capital_allocation_group as pcg')
+                                        ->select(DB::raw("if(pcg.id_baranggay_lgu=0,'Regular',concat(if(bl.type=1,'Brgy - ','LGU - '),bl.name)) as groupings,
+                                        pcg.id_baranggay_lgu as group_ref"))
+                                        ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+                                        ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','pcg.id_baranggay_lgu')
+                                        ->orderBy(DB::raw("if(pcg.id_baranggay_lgu=0,3,bl.type)"))
+                                        ->orderBy(DB::raw("bl.name"))
+                                        ->get();
 
+        // $groupings = $data['Groups'] = DB::table('patronage_capital_allocation_details as pra')
+        //                 ->select(DB::raw("if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name)) as groupings,if(m.id_baranggay_lgu is null,0,m.id_baranggay_lgu) as group_ref"))
+        //                 // ->leftJoin('member as m','m.id_member','pra.id_member')
+        //                 ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','pra.id_baranggay_lgu')
+        //                 ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+        //                 ->orderBy(DB::raw("if(m.id_baranggay_lgu is null,3,bl.type) "))
+        //                 ->orderBy(DB::raw("concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) "))
+        //                 ->groupBy(DB::raw("if(m.id_baranggay_lgu is null,'Regular',concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name))"))
+        //                 ->get();
         $defGroup = $groupings[0]->group_ref;
 
         $data['AllocationTable'] = $this->FetchGroupAllocation($id_patronage_capital_allocation,$defGroup,false);
-
+        $data['GroupDetails'] = $this->FetchGroupDetails($id_patronage_capital_allocation,$defGroup);
 
         return view('patronage_refunds.allocation-form',$data);
-
-
     }
 
     public function FetchGroupAllocation($id_patronage_capital_allocation,$id_brgy_lgu,$all){
@@ -699,29 +720,28 @@ class PatronageRefundController extends Controller
                    ->leftJoin('baranggay_lgu as bl','bl.id_baranggay_lgu','pc.id_baranggay_lgu')
                    ->where('pc.id_patronage_capital_allocation',$id_patronage_capital_allocation);
         if(!$all){
-            $output->where(function($query) use($id_brgy_lgu){
-                        if($id_brgy_lgu > 0){
-                            $query->where('pc.id_baranggay_lgu',$id_brgy_lgu);
-                        }else{
-                             $query->whereNull('pc.id_baranggay_lgu');
-                        }
-                   });
+            $output->where('pc.id_baranggay_lgu',$id_brgy_lgu);
         }else{
-            $output->orderBy(DB::raw("if(pc.id_baranggay_lgu is null,3,bl.type) "))
-                    ->orderBy(DB::raw("concat(if(bl.type=1,'Brgy. ','LGU - '),bl.name) "));
+            $output->orderBy(DB::raw("if(pc.id_baranggay_lgu = 0,3,bl.type) "))
+                    ->orderBy("bl.name");
         }
-
         return $output->orderBy('Name')->get();
-
-        //  $output;
     }
 
+    public function FetchGroupDetails($id_patronage_capital_allocation,$type){
+        return DB::table('patronage_capital_allocation_group')
+                          ->select(DB::raw("date_released,release_remarks,if(status = 0,'Draft','Released') as status,status as status_code"))
+                          ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
+                          ->where('id_baranggay_lgu',$type)
+                          ->first();
+    }
 
     public function fetchMemberAllocation(Request $request){
         $id_patronage_capital_allocation = $request->id_patronage_capital_allocation;
         $type = $request->type;
 
         $data['allocations'] = $this->FetchGroupAllocation($id_patronage_capital_allocation,$type,false);
+        $data['details'] = $this->FetchGroupDetails($id_patronage_capital_allocation,$type);
 
         return response($data);
     }

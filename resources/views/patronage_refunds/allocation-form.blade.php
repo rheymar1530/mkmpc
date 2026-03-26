@@ -76,8 +76,6 @@
                                             <span class="text-md  font-weight-bold lbl_color">Remarks: <span
                                                     class="ms-sm-2 font-weight-normal ml-2">
                                                     {{ $details->remarks }}</span></span>
-
-
                                         </div>
                                     </div>
                                 </div>
@@ -87,8 +85,6 @@
                                     onclick="print_page('/patronage-refund/print/{{ $details->id_patronage_capital_allocation }}')">Print
                                     Allocation</button>
                                  <button class="btn btn-sm bg-gradient-danger float-right mr-3" id="btnAllocationStatus">Allocation Status</button>
-
-
                             </div>
                         </div>
                     </div>
@@ -103,7 +99,21 @@
                         </select>
                     </div>
                 </div>
-
+                <div class="row mt-2">
+                    <div class="col-lg-6">
+                        <div class="d-flex flex-column">
+                            <span class="text-md  font-weight-bold lbl_color">Date Released:
+                                <span class="ms-sm-2 font-weight-normal ml-2" id="spn-dt-released">-</span>
+                            </span>
+                            <span class="text-md  font-weight-bold lbl_color">Remarks:
+                                <span class="ms-sm-2 font-weight-normal ml-2" id="spn-remarks">-</span>
+                            </span>
+                            <span class="text-md  font-weight-bold lbl_color">Status:
+                                <span class="ms-sm-2 font-weight-normal ml-2 badge text-sm" id="spn-badge"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
                 <table class="table table-bordered table-allocation table-head-fixed mt-3">
                     <thead>
@@ -119,8 +129,6 @@
                             <th>NET</th>
                             <th>CBU</th>
                             <th></th>
-
-
                         </tr>
                     </thead>
                     <tbody id="body-allocation">
@@ -153,15 +161,44 @@
 @include('global.print_modal')
 @include('patronage_refunds.confirm-allocation')
 @include('patronage_refunds.group-modal')
+@include('patronage_refunds.allocate-release-modal')
 @endsection
 
 @push('scripts')
     <script type="text/javascript">
         const ID_PATRONAGE_CAPITAL_ALLOCATION = '{{ $details->id_patronage_capital_allocation ?? 0 }}';
         const AllocationTable = @json($AllocationTable);
+        const GroupDetails = @json($GroupDetails);
+        const CURRENT_DATE = '{{MySession::current_date()}}';
+
+        function formatDate(date) {
+            const d = new Date(date);
+
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day   = String(d.getDate()).padStart(2, '0');
+            const year  = d.getFullYear();
+
+            return `${month}/${day}/${year}`;
+        }
+
         $(document).ready(function () {
             DrawTable(AllocationTable);
-        })
+            $('#txt-date-released').val(GroupDetails.date_released ?? CURRENT_DATE);
+            $('#txt_remarks_allocate').val(GroupDetails.release_remarks ?? '');
+
+            initReleasedDetails(GroupDetails.date_released ?? '-',GroupDetails.release_remarks ?? '-',GroupDetails.status);
+        });
+
+        const initReleasedDetails = (date,remarks,status) => {
+           date = date === '-' ? date : formatDate(date);
+
+            $('#spn-dt-released').text(date);
+            $('#spn-remarks').text(remarks);
+            let badgeClass = status=='Draft' ? 'primary':'success'
+            $('#spn-badge').removeClass('badge-success badge-primary');
+            $('#spn-badge').addClass(`badge-${badgeClass}`);
+            $('#spn-badge').text(status);
+        }
         $(document).on('change', '#sel-groupings', function () {
             let type = $(this).val();
             fetchAllocations(type);
@@ -180,6 +217,11 @@
                 },
                 success: function (response) {
                     hide_loader();
+                    $('#txt-date-released').val(response.details.date_released ?? CURRENT_DATE);
+                    $('#txt_remarks_allocate').val(response.details.release_remarks ?? '');
+
+                    initReleasedDetails(response.details.date_released ?? '-',response.details.release_remarks ?? '-',response.details.status);
+
                     DrawTable(response.allocations);
                     console.log({
                         response
@@ -295,97 +337,10 @@
         });
 
         $('#btn-post').on('click', () => {
-            Swal.fire({
-                title: 'Do you want to save this?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: `Save`
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    postAllocation()
-                }
-            })
+            showPostAllocateModal();
+
         });
 
-        const postAllocation = () =>{
-            const allocation = $('.row-member').map(function () {
-                const temp = {};
-                temp['id_member'] = $(this).attr('data-id-member');
-                $(this).find('.ff').each(function () {
-                    temp[this.name] = decode_number_format(this.value);
-                });
-                return temp;
-            }).get();
-
-            const ajaxParam = {
-                'allocations': allocation,
-                'id_patronage_capital_allocation': ID_PATRONAGE_CAPITAL_ALLOCATION,
-                'id_baranggay_lgu' : $('#sel-groupings').val()
-            };
-
-
-            $.ajax({
-                type: 'POST',
-                url: '/patronage-refund/post-allocation',
-                data: ajaxParam,
-                beforeSend: function () {
-                    $('.table-danger').removeClass('table-danger');
-                    show_loader();
-                },
-                success: function (response) {
-                    console.log({
-                        response
-                    });
-                    hide_loader();
-                    if (response.RESPONSE_CODE == "SUCCESS") {
-                        Swal.fire({
-                            title: response.message,
-                            text: '',
-                            icon: 'success',
-                            showCancelButton: false,
-                            showConfirmButton: false,
-                            timer: 2000
-                        }).then(() => {
-
-                        });
-                        $('#sel-groupings').val($('#sel-groupings').val()).trigger('change');
-                    } else if (response.RESPONSE_CODE == "ERROR") {
-                        const InvalidRows = response.invalidRows;
-                        Swal.fire({
-                            title: response.message,
-                            text: '',
-                            icon: 'warning',
-                            showCancelButton: false,
-                            showConfirmButton: false,
-                            timer: 2500
-                        }).then(() => {
-                            $.each(InvalidRows, function (i, id) {
-                                console.log({
-                                    id
-                                })
-                                $(`tr.row-member[data-id-member="${id}"]`).addClass(
-                                    'table-danger');
-                            })
-                        });
-                    }
-                },
-                error: function (xhr, status, error) {
-                    hide_loader()
-                    var errorMessage = xhr.status + ': ' + xhr.statusText;
-                    Swal.fire({
-                        title: "Error-" + errorMessage,
-                        text: '',
-                        icon: 'warning',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: "#DD6B55"
-                    });
-                }
-            });
-
-            console.log({
-                ajaxParam
-            });
-        }
 
         $(document).on('click','.btn-print-jv',function(){
             let id_journal_voucher = $(this).closest('tr.row-member').attr('data-jv');

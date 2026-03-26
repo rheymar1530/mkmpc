@@ -546,7 +546,6 @@ class JVModel extends Model
     }
 
     public static function PRAllocation($id_patronage_capital_allocation,$id_member){
-
         $id_journal_voucher = DB::table('patronage_capital_allocation_details')
                             ->select('id_journal_voucher')
                             ->where('id_patronage_capital_allocation',$id_patronage_capital_allocation)
@@ -558,7 +557,7 @@ class JVModel extends Model
                 INSERT INTO journal_voucher
                 (date,type,description,id_member,payee,reference,status,total_amount,id_branch,address,payee_type)
                 SELECT
-                    '2026-07-03',
+                    pcg.date_released,
                     12,
                     CONCAT('INTEREST ON CAPITAL SHARE AND PATRONAGE REFUND ALLOCATION FOR THE YEAR ', pca.year),
                     pcd.id_member
@@ -573,6 +572,8 @@ class JVModel extends Model
                 LEFT JOIN member as m on m.id_member = pcd.id_member
                 LEFT JOIN patronage_capital_allocation as pca
                     on pca.id_patronage_capital_allocation = pcd.id_patronage_capital_allocation
+                LEFT JOIN patronage_capital_allocation_group as pcg
+                    on pcg.id_patronage_capital_allocation = pca.id_patronage_capital_allocation AND pcd.id_baranggay_lgu = pcg.id_baranggay_lgu
                 WHERE pcd.id_patronage_capital_allocation = ?
                 AND pcd.id_member = ?
             ", [$id_patronage_capital_allocation, $id_member]);
@@ -586,9 +587,10 @@ class JVModel extends Model
                 ON m.id_member = pcd.id_member
             LEFT JOIN patronage_capital_allocation pca
                 ON pca.id_patronage_capital_allocation = pcd.id_patronage_capital_allocation
-
+            LEFT JOIN patronage_capital_allocation_group as pcg
+                    on pcg.id_patronage_capital_allocation = pca.id_patronage_capital_allocation AND pcd.id_baranggay_lgu = pcg.id_baranggay_lgu
             SET
-                jv.date = '2026-07-03',
+                jv.date = pcg.date_released,
                 jv.type = 12,
                 jv.description = CONCAT('INTEREST ON CAPITAL SHARE AND PATRONAGE REFUND ALLOCATION FOR THE YEAR ', pca.year),
                 jv.payee = FormatName(m.first_name,m.middle_name,m.last_name,m.suffix),

@@ -31,14 +31,6 @@
                 <div class="modal-body">
                     <div class="col-md-12">
                         <div class="form-row" style="margin-top:10px">
-                            <!-- <div class="form-group col-md-6">
-                                <label for="txt_cancel_reason">Default Allocation</label>
-                                <select class="form-control form-control-border" id="sel-def-allocation">
-                                    @foreach($DefAllocation as $v=>$t)
-                                    <option value="{{$v}}">{{$t['description']}}</option>
-                                    @endforeach
-                                </select>
-                            </div> -->
                             <div class="form-group col-md-12">
                                 <label for="txt_cancel_reason">Remarks</label>
                                 <textarea class="form-control" rows="3" style="resize:none;" id="txt_remarks"></textarea>
