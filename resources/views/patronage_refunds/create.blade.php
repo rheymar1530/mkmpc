@@ -31,6 +31,7 @@
                         <label class="lbl_color">Interest Capital Share Payable</label>
                         <input class="form-control form-control-border class_amount text-right" type="text"
                             value="{{ number_format($icsp,2) }}" name="icsp">
+                        <input type="hidden" name="prev_year" value="{{ $sel_year }}">
                     </div>
                     <div class="form-group col-md-3">
                         <label class="lbl_color">Patronage Refund Payables</label>
@@ -86,6 +87,7 @@
 
 @push('scripts')
 <script type="text/javascript">
+
     $(document).on("focus",".class_amount",function(){
     	var val = $(this).val();
     	if(val == '' || val == 'NaN'){

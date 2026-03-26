@@ -69,9 +69,29 @@ class PatronageRefundController extends Controller
 
         $data['sidebar']="sidebar-collapse";
 
-        $data['sel_year'] = $year = $request->year ?? MySession::current_year();
-        $data['icsp'] = $ICP = $this->cleanNumber($request->icsp ?? $this->parseInterestCapitalSharePayables($year,0));
-        $data['prp'] = $PR = $this->cleanNumber($request->prp ?? $this->parsePatronageRefundPayables($year,0));
+        $year     = $request->year ?? MySession::current_year();
+        $prevYear = $request->prev_year;
+
+        $data['sel_year'] = $year;
+
+
+        $yearChanged = ($prevYear !== null && $year != $prevYear);
+
+        if ($yearChanged) {
+            $ICP = $this->parseInterestCapitalSharePayables($year,0);
+            $PR  = $this->parsePatronageRefundPayables($year,0);
+        } else {
+            $ICP = $this->cleanNumber(
+                $request->icsp ?? $this->parseInterestCapitalSharePayables($year,0)
+            );
+
+            $PR = $this->cleanNumber(
+                $request->prp ?? $this->parsePatronageRefundPayables($year,0)
+            );
+        }
+
+        $data['icsp'] = $ICP;
+        $data['prp']  = $PR;
 
         $data['DefAllocation'] = $this->DefAllocation;
 
