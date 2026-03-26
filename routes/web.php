@@ -602,6 +602,8 @@ Route::group(['middleware' => 'session'], function(){
 	Route::get('/patronage-refund/print/{id_patronage_refund_allocation}','PatronageRefundController@PrintPatronageRefund');
 	Route::get('/patronage-refund/group-status','PatronageRefundController@GroupStatus');
 
+	Route::get('/cbu-adj','Test@cbu_adj');
+
 
 
 
