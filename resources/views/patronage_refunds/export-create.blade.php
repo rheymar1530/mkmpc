@@ -156,17 +156,7 @@
 </head>
 
 <body>
-    @php
-        $size = count($MemberFinalData);  $counter = 1;
-        $totalKeys = ['CBUTotal','AverageCBU','ICS','InterestTotal','PR','TotalPayables','Net','CBU_Retention'];
-        $GLOBALS['grandtotals'] = array();
 
-        foreach($totalKeys as $key){
-            $GLOBALS['grandtotals'][$key] = 0;
-        }
-
-
-    @endphp
 
         <header>
             <div class="header" style="margin-top: 100px !important;">
@@ -204,9 +194,6 @@
                 <p class="my-0"><b>CBU Retention</b>: <span id="total-cbu">{{number_format($totals['CBU_Retention'],2)}}</span> </p>
                 <p class="my-0"><b>Total Payables</b>: <span id="total-payables">{{number_format($totals['TotalPayables'],2)}}</span> </p>
 
-
-
-
             </div>
         </div>
         <div class="row">
@@ -218,9 +205,6 @@
             @endforeach
         </div>
 
-        @php
-            $counter++;
-        @endphp
 
 </body>
 

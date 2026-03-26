@@ -41,7 +41,7 @@
             <th>TSM</th>
             <th>ASM</th>
             <th>ICS</th>
-            <th>INTEREST<br>ON LOAN</th>
+            <th>INTEREST<br>INCOME</th>
             <th>PR</th>
             <th>TOTAL</th>
             <th style="width:2.5cm">CBU<br>RETENTION</th>
@@ -52,7 +52,7 @@
     <tbody>
         @php
             $totalKeys =
-            ['capital_share','ave_monthly_cbu','interest_capital_share','loan_interest','patronage_refund','total'];
+            ['capital_share','ave_monthly_cbu','interest_capital_share','loan_interest','patronage_refund','total','w_cash','w_cbu'];
             $gTotals = array();
             $counter = 1;
         @endphp
@@ -70,8 +70,8 @@
                     <td class="class_amount b">{{ number_format($m['patronage_refund'],2) }}
                     </td>
                     <td class="class_amount b">{{ number_format($m['total'],2) }}</td>
-                    <td></td>
-                    <td></td>
+                    <td class="class_amount b">{{ number_format($m['w_cbu'],2) }}</td>
+                    <td class="class_amount b">{{ number_format($m['w_cash'],2) }}</td>
                     <td style="padding-top:8mm;">&nbsp;</td>
                 </tr>
                 @foreach($totalKeys as $tk)
@@ -92,8 +92,8 @@
         <td>{{ number_format($gTotals['loan_interest'] ?? 0,2) }}</td>
         <td>{{ number_format($gTotals['patronage_refund'] ?? 0,2) }}</td>
         <td>{{ number_format($gTotals['total'] ?? 0,2) }}</td>
-        <td></td>
-        <td></td>
+        <td>{{ number_format($gTotals['w_cash'] ?? 0,2) }}</td>
+        <td>{{ number_format($gTotals['w_cbu'] ?? 0,2) }}</td>
         <td></td>
     </tr>
 

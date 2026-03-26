@@ -114,7 +114,12 @@
         .font-weight-bold {
             font-weight: bold !important;
         }
-
+        #tbl-foot, #tbl-foot td{
+            border: none !important;
+        }
+        #details p{
+            font-size: 15pt;
+        }
     </style>
 </head>
 
@@ -123,29 +128,20 @@
     @foreach($MemberFinalData as $group=>$MemberTable)
         <header>
             <div class="header" style="margin-top: 100px !important;">
-                <p style="font-size: 20px;margin-top: -15px">
-                    <b>{{ config('variables.coop_name') }}</b>
-                </p>
-                <p style="font-size: 17px;margin-top: -21px">{{ config('variables.coop_address') }}
-                </p>
-                <p style="font-size: 20px;margin-top: -15px"><b>Patronage Refund and Interest on Capital Share
-                        Allocation</b></p>
-                <p style="font-size: 17px;margin-top: -21px">{{ $group }}
-                </p>
-
+                <p style="font-size: 20px;margin-top: -15px"><b>{{ config('variables.coop_name') }}</b></p>
+                <p style="font-size: 17px;margin-top: -21px">{{ config('variables.coop_address') }}</p>
+                <p style="font-size: 20px;margin-top: -15px"><b>Patronage Refund and Interest on Capital Share Allocation</b></p>
+                <p style="font-size: 20px;margin-top: -21px"><b><u>{{ $group }}</u></b></p>
             </div>
         </header>
         <?php
-		$total = 0;
-
-		$totalPayment = 0;
-	?>
-        <div class="row" style="margin-top: 0.5cm;">
+            $total = 0;
+            $totalPayment = 0;
+	    ?>
+        <div class="row" style="margin-top: 0.5cm;" id="details">
             <div class="columnLeft">
                 <p class="my-0"><b>ID: </b>{{ $details->id_patronage_capital_allocation }}</p>
                 <p class="my-0"><b>Year: </b>{{ $details->year }}</p>
-
-
             </div>
             <div class="columnRight">
                 <p class="my-0"><b>Interest on Capital Share: </b>
@@ -163,6 +159,39 @@
         </div>
 
 
+
+    <div style="margin-top: 80px; width: 100%;">
+        <table id="tbl-foot" style="width: 100%; text-align: center;">
+            <tr>
+                <td style="width: 33%;">
+                    <div style="display: inline-block; text-align: center;">
+                        <div style="border-bottom: 1px solid #000; width: 400px; margin: 0 auto;">
+                            {{ $prepared_by ?? '' }}
+                        </div>
+                        <div><b>Prepared by</b></div>
+                    </div>
+                </td>
+
+                <td style="width: 33%;">
+                    <div style="display: inline-block; text-align: center;">
+                        <div style="border-bottom: 1px solid #000; width: 300px; margin: 0 auto;">
+                            {{ $checked_by ?? '' }}
+                        </div>
+                        <div><b>Checked by</b></div>
+                    </div>
+                </td>
+
+                <td style="width: 33%;">
+                    <div style="display: inline-block; text-align: center;">
+                        <div style="border-bottom: 1px solid #000; width: 300px; margin: 0 auto;">
+                            {{ $approved_by ?? '' }}
+                        </div>
+                        <div><b>Approved by</b></div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
 
         @if($counter != $size)
             <div style="page-break-after: always"></div>

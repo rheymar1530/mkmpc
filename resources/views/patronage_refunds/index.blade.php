@@ -52,7 +52,7 @@
 
 </style>
 <div class="container-fluid main_form" style="margin-top:-20px">
-    <h3>Patronage Refund Allocation&nbsp;&nbsp; </h3>
+    <h3>ISC & PR Allocation&nbsp;&nbsp; </h3>
     <div class="row">
         <div class="col-md-12">
             <table id="tbl_patronage_refund" class="table table-hover table-striped"
@@ -202,7 +202,7 @@
         <script type="text/javascript">
             $(document).ready(function () {
                 $('#tbl_patronage_refund_filter').append(
-                    '<a class="btn bg-gradient-info" onclick="redirect_add()" style="float:left"><i class="fa fa-plus"></i>&nbsp;Create Patronage Refund Allocation</a>'
+                    '<a class="btn bg-gradient-info" onclick="redirect_add()" style="float:left"><i class="fa fa-plus"></i>&nbsp;Create ISC & PR Allocation</a>'
                 )
             })
 

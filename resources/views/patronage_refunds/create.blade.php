@@ -64,12 +64,24 @@
             </div>
         </div>
         <div class="card-footer">
-            <button class="btn btn-md bg-gradient-success float-right" id="btn-post-allocation">Post</button>
+             <button class="btn btn-md bg-gradient-success float-right ml-2" id="btn-post-allocation">Post</button>
+                <div class="dropdown float-right">
+                    <a class="btn btn-primary dropdown-toggle btn-md" href="#" role="button" data-toggle="dropdown"
+                        aria-expanded="false">
+                        Export
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" onclick="Export(1)">PDF</a>
+                        <a class="dropdown-item" onclick="Export(2)">Excel</a>
+                    </div>
+                </div>
+
         </div>
     </div>
 </div>
 
 @include('patronage_refunds.post-modal')
+@include('global.print_modal')
 @endsection
 
 @push('scripts')
@@ -94,6 +106,21 @@
     		return;
     	}
     	$(this).val(number_format(parseFloat(val)));
-    })
+    });
+
+    const Export = (type) => {
+        let url = new URL(window.location.href);
+
+        // set or overwrite export param
+        url.searchParams.set('export', type);
+        let link = url.toString();
+        // redirect
+        if(type == 1){
+            print_page(link);
+        }else{
+            window.location.href = link;
+        }
+
+    }
 </script>
 @endpush

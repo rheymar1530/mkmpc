@@ -10,6 +10,8 @@ use Illuminate\Database\QueryException;
 use App\CredentialModel;
 use PDF;
 use App\JVModel;
+use App\Exports\PatronageRefundExport;
+use Excel;
 
 class PatronageRefundController extends Controller
 {
@@ -47,7 +49,7 @@ class PatronageRefundController extends Controller
 
         $data['patronage_refunds'] = DB::table('patronage_capital_allocation as pca')
                                ->select(DB::raw("pca.id_patronage_capital_allocation,pca.year,capital_share_p,patronage_refund_p,pca.remarks,
-                                        CASE WHEN pca.status = 0 THEN 'For Allocation'
+                                        CASE WHEN pca.status = 0 THEN 'For Release'
                                         WHEN pca.status = 1 THEN 'Approved'
                                         WHEN pca.status = 2 THEN 'Confirmed'
                                         ELSE 'Cancelled' END as status_description
@@ -64,7 +66,6 @@ class PatronageRefundController extends Controller
 
     public function create(Request $request){
         $export = $request->export ?? 0;
-
 
         $data['sidebar']="sidebar-collapse";
 
@@ -89,8 +90,12 @@ class PatronageRefundController extends Controller
         $data['totals'] = $t;
 
         // dd($data);
+        $d = $data['file_name'] = "ISC AND PR YEAR {$data['sel_year']}";
         if($export == 1){
-            $data['file_name'] = "ISC AND PR YEAR {$data['sel_year']}";
+
+            $data['isExcel'] = false;
+
+
             $html = view('patronage_refunds.export-create',$data);
 
             $pdf = PDF::loadHtml($html);
@@ -107,6 +112,9 @@ class PatronageRefundController extends Controller
             $pdf->setOption('header-font-name', 'Calibri');
 
             return $pdf->stream("{$data['file_name']}.pdf",array('Attachment'=>1));
+        }elseif($export == 2){
+            $data['isExcel'] = true;
+             return Excel::download(new PatronageRefundExport($data), "{$d}.xlsx");
         }
 
         return view('patronage_refunds.create',$data);
@@ -758,6 +766,7 @@ class PatronageRefundController extends Controller
 
     public function PrintPatronageRefund($id_patronage_capital_allocation){
         $out = $this->FetchGroupAllocation($id_patronage_capital_allocation,0,true);
+
         $g = new GroupArrayController();
 
         $MemberLists = $g->array_group_by($out,['groupings']);

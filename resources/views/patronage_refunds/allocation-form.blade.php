@@ -153,7 +153,7 @@
 
                     </div>
                 </div> -->
-                <button class="btn btn-md float-right bg-gradient-success" id="btn-post">Allocation Released</button>
+                <button class="btn btn-md float-right bg-gradient-success" id="btn-post">Released</button>
             </div>
         </div>
     </div>

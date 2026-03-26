@@ -2,8 +2,6 @@
     .table-allocation th,
     td {
         font-size: 0.9rem;
-
-
     }
 
     .table-allocation th {
@@ -23,7 +21,6 @@
     .b {
         font-weight: bold;
     }
-
 </style>
 
 <table class="table table-bordered table-allocation table-head-fixed mt-3">
@@ -34,7 +31,7 @@
             <th>TSM</th>
             <th>ASM</th>
             <th>ISC</th>
-            <th>INTEREST ON LOAN</th>
+            <th>INTEREST INCOME</th>
             <th>PR</th>
             <th>TOTAL</th>
             <th>RATE</th>
@@ -42,21 +39,27 @@
             <th>CBU</th>
         </tr>
     </thead>
+
     <tbody>
         @php
             $totalKeys = ['CBUTotal','AverageCBU','ICS','InterestTotal','PR','TotalPayables','Net','CBU_Retention'];
-            $gTotals = array();
+            $gTotals = [];
             $counter = 1;
         @endphp
 
-
-
-
         @foreach($MemberFinalData as $group=>$MemberTable)
+
+            {{-- 🔹 Reset group totals --}}
+            @php
+                $groupTotals = [];
+            @endphp
+
+            {{-- 🔹 Group Header --}}
             <tr class="table-primary">
                 <td colspan="11" class="font-weight-bold">{{ $group }}</td>
             </tr>
 
+            {{-- 🔹 Members --}}
             @foreach($MemberTable as $i=>$m)
                 <tr>
                     <td class="text-center">{{ $counter }}</td>
@@ -71,16 +74,39 @@
                     <td class="text-right b">{{ number_format($m['Net'],2) }}</td>
                     <td class="text-right b">{{ number_format($m['CBU_Retention'],2) }}</td>
                 </tr>
+
+                {{-- 🔹 Totals computation --}}
                 @foreach($totalKeys as $tk)
-                    <?php
+                    @php
+                        // grand total
                         $gTotals[$tk] = ($gTotals[$tk] ?? 0) + $m[$tk];
-                    ?>
+
+                        // group total
+                        $groupTotals[$tk] = ($groupTotals[$tk] ?? 0) + $m[$tk];
+                    @endphp
                 @endforeach
-                <?php $counter++; ?>
+
+                @php $counter++; @endphp
             @endforeach
+
+            {{-- 🔹 Subtotal Row --}}
+            <tr class="footer" style="background-color: #f5f5f5;">
+                <td colspan="2" class="text-right b">Subtotal</td>
+                <td>{{ number_format($groupTotals['CBUTotal'] ?? 0,2) }}</td>
+                <td>{{ number_format($groupTotals['AverageCBU'] ?? 0,2) }}</td>
+                <td>{{ number_format($groupTotals['ICS'] ?? 0,2) }}</td>
+                <td>{{ number_format($groupTotals['InterestTotal'] ?? 0,2) }}</td>
+                <td>{{ number_format($groupTotals['PR'] ?? 0,2) }}</td>
+                <td>{{ number_format($groupTotals['TotalPayables'] ?? 0,2) }}</td>
+                <td></td>
+                <td>{{ number_format($groupTotals['Net'] ?? 0,2) }}</td>
+                <td>{{ number_format($groupTotals['CBU_Retention'] ?? 0,2) }}</td>
+            </tr>
+
         @endforeach
     </tbody>
 
+    {{-- 🔹 GRAND TOTAL --}}
     <tfoot>
         <tr class="footer">
             <td colspan="2"></td>
